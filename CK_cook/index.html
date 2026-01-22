@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>코어키퍼 요리레시피 검색기</title>
+    <style>
+        :root { --bg: #0c0f14; --panel: #1a1d23; --border: #3a3f4b; --accent: #4e9af1; --gold: #f1c40f; --text: #e0e0e0; --danger: #e74c3c; }
+        body { background: var(--bg); color: var(--text); font-family: 'Malgun Gothic', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; font-size: 14px; overflow: hidden; }
+        
+        header { padding: 0.8rem 1.5rem; background: var(--panel); border-bottom: 2px solid var(--border); display: flex; align-items: center; justify-content: space-between; z-index: 1001; }
+        .hamburger { display: none; cursor: pointer; font-size: 1.5rem; color: var(--accent); background: none; border: none; }
+
+        .main-layout { display: grid; grid-template-columns: 280px 1fr 320px; flex: 1; overflow: hidden; position: relative; }
+
+        .sidebar { background: var(--panel); border-right: 1px solid var(--border); padding: 1rem; overflow-y: auto; transition: transform 0.3s ease; }
+        .search-box { margin-bottom: 1.5rem; }
+        .search-input { width: 92%; padding: 10px; background: #0c0f14; border: 1px solid var(--border); border-radius: 6px; color: white; outline: none; }
+        .filter-category h3 { font-size: 0.9rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 8px; }
+        .stat-filter-btn { display: block; width: 100%; text-align: left; background: none; border: 1px solid transparent; color: #888; padding: 6px 10px; cursor: pointer; border-radius: 4px; font-size: 0.8rem; }
+        .stat-filter-btn.active { background: #2c3e50; border-color: var(--accent); color: white; }
+
+        .content { padding: 1rem; overflow-y: auto; background: #121418; }
+        .ingredient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+        
+        .item-card { background: #252a34; border: 1px solid var(--border); border-radius: 6px; padding: 12px 8px; text-align: center; cursor: pointer; position: relative; transition: 0.2s; }
+        .item-card.selected { border: 2px solid var(--accent); background: #2d3442; }
+        .item-card.is-golden { border-color: var(--gold); }
+        .item-name { font-size: 0.85rem; font-weight: bold; display: block; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-loc { font-size: 0.7rem; color: #888; display: block; margin-top: 4px; } /* 획득처 스타일 */
+        
+        .result-panel { background: var(--panel); border-left: 1px solid var(--border); padding: 1rem; display: flex; flex-direction: column; overflow-y: auto; }
+        .cooking-pot { background: #000; border-radius: 12px; padding: 12px; display: flex; justify-content: space-around; border: 2px dashed #444; }
+        .pot-slot { width: 60px; height: 60px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; }
+        .result-stats { flex: 1; background: #0c0f14; border-radius: 6px; padding: 10px; margin-top: 10px; border: 1px solid var(--border); }
+        .stat-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #1a1d23; font-size: 0.8rem; }
+        .stat-value { color: var(--accent); font-weight: bold; }
+        .stat-value.gold-txt { color: var(--gold); }
+        .golden-notice { font-size: 0.7rem; color: var(--gold); background: rgba(241, 196, 15, 0.1); padding: 6px; border-radius: 4px; text-align: center; display: none; margin-bottom: 8px; }
+        .reset-btn { margin-top: 8px; padding: 10px; background: var(--danger); border: none; color: white; cursor: pointer; border-radius: 4px; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            .hamburger { display: block; }
+            .main-layout { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; left: 0; top: 55px; bottom: 0; width: 260px; z-index: 1000; transform: translateX(-100%); box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+            .sidebar.active { transform: translateX(0); }
+            .result-panel { border-left: none; border-top: 2px solid var(--border); min-height: 280px; }
+            .ingredient-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <h3 style="margin:0;">코어키퍼 요리레시피 검색기 (v 1.1.2.2 대응) </h3>
+</header>
+
+<div class="main-layout">
+    <aside class="sidebar" id="sidebar">
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 재료 이름 검색..." oninput="render()">
+        </div>
+        <div class="filter-category">
+            <h3>전체</h3>
+            <button class="stat-filter-btn active" id="btn-all" onclick="setFilter('all')">모든 재료 보기</button>
+        </div>
+        <div id="dynamicFilters"></div>
+    </aside>
+
+    <main class="content"><div class="ingredient-grid" id="ingredientGrid"></div></main>
+
+    <aside class="result-panel">
+        <div id="goldAlert" class="golden-notice">✨ 금색 강화 요리 적용 (수치 증가) ✨</div>
+        <div class="cooking-pot">
+            <div class="pot-slot" id="slot0" onclick="removeFromPot(0)" title="클릭하여 제거">?</div>
+            <div class="pot-slot" id="slot1" onclick="removeFromPot(1)" title="클릭하여 제거">?</div>
+        </div>
+        <div class="result-stats" id="resultStats"></div>
+        <button class="reset-btn" onclick="clearPotOnly()">냄비 비우기</button>
+    </aside>
+</div>
+
+<script>
+    const statLabels = { 
+        regen: "초당 체력 재생", hp: "최대 체력", melee: "물리 근접 피해 (%)", glow: "불빛 범위", m_regen: "초당 마나 재생", m_max: "최대 마나", speed: "이동 속도 (%)", m_speed: "근접 공격 속도 (%)", armor: "방어력", b_res: "보스 피해 감소 (%)", m_barrier: "보호막량", b_dmg: "보스 피해량 (%)", food: "음식 소모 감소 (%)", r_dmg: "물리 원거리 피해 (%)", r_speed: "원거리 공격 속도 (%)", magic: "마법 피해 (%)", glow_b: "파랑 불빛", minion: "소환수 피해 (%)", minion_s: "소환수 공격 속도 (%)", mining: "채굴 피해", mining_s: "채굴 속도 (%)", l_leech: "타격 시 체력 회복", fish: "낚시 숙련도", mold_im: "곰팡이 면역", thorns: "가시 피해", c_dmg: "치명타 피해 (%)", dodge: "회피 확률 (%)", all_dmg: "모든 피해량 (%)", crit: "치명타 확률 (%)", speed_a: "근/원거리 공속 (%)", p_hp: "영구 최대 체력 (1회)", pet_dmg: "애완동물 피해 (%)", minion_c: "소환수 치명타 (%)", ally_regen: "주변 아군 재생", s_slow_im: "슬라임 감속 면역", a_dmg_im: "산성 피해 면역", regen_b: "지속 치유 추가 (%)", knock: "밀쳐내기 확률 (%)", burn_im: "화상 면역"
+    };
+
+    const filterCategories = {
+        "생존": ["hp", "p_hp", "regen", "regen_b", "food", "ally_regen"],
+        "방어": ["armor", "dodge", "m_barrier", "b_res", "thorns", "burn_im", "mold_im", "s_slow_im", "a_dmg_im"],
+        "공격": ["all_dmg", "melee", "r_dmg", "magic", "crit", "c_dmg", "speed_a", "m_speed", "r_speed", "l_leech", "b_dmg", "minion", "minion_s", "minion_c", "pet_dmg"],
+        "기타": ["speed", "glow", "glow_b", "m_max", "m_regen", "fish", "mining", "mining_s", "knock"]
+    };
+    
+    let ingredients = [], selectedPot = [null, null], currentFilter = 'all';
+
+    async function loadData() {
+        try {
+            const res = await fetch('data.json');
+            ingredients = await res.json();
+            const container = document.getElementById('dynamicFilters');
+            for (const [cat, stats] of Object.entries(filterCategories)) {
+                const div = document.createElement('div');
+                div.className = 'filter-category';
+                div.innerHTML = `<h3>${cat}</h3>`;
+                stats.forEach(s => {
+                    if(statLabels[s]) {
+                        const b = document.createElement('button');
+                        b.className = 'stat-filter-btn';
+                        b.innerText = statLabels[s];
+                        b.onclick = () => setFilter(s);
+                        div.appendChild(b);
+                    }
+                });
+                container.appendChild(div);
+            }
+            render();
+        } catch (e) { console.error("Data load failed", e); }
+    }
+
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+
+    function render() {
+        const grid = document.getElementById('ingredientGrid');
+        grid.innerHTML = '';
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        
+        ingredients.filter(i => (currentFilter === 'all' || i.effects[currentFilter]) && i.name.toLowerCase().includes(q))
+        .forEach(i => {
+            const card = document.createElement('div');
+            const countInPot = selectedPot.filter(item => item === i).length;
+            card.className = `item-card ${countInPot > 0 ? 'selected' : ''} ${i.isGolden ? 'is-golden' : ''}`;
+            card.innerHTML = `
+                <span style="font-size:1.5rem">${i.icon}</span><br>
+                <strong class="item-name">${i.name}</strong>
+                <span class="item-loc">${i.loc}</span> 
+            `;
+            
+            card.onclick = () => {
+                if(!selectedPot[0]) selectedPot[0] = i; 
+                else if(!selectedPot[1]) selectedPot[1] = i;
+                else { selectedPot[0] = selectedPot[1]; selectedPot[1] = i; }
+                updatePot(); render();
+            };
+            grid.appendChild(card);
+        });
+    }
+
+    function removeFromPot(idx) { selectedPot[idx] = null; updatePot(); render(); }
+
+    function updatePot() {
+        document.getElementById('slot0').innerText = selectedPot[0]?.icon || '?';
+        document.getElementById('slot1').innerText = selectedPot[1]?.icon || '?';
+        const res = document.getElementById('resultStats'), gold = document.getElementById('goldAlert');
+        
+        if(!selectedPot[0] && !selectedPot[1]) { 
+            res.innerHTML = "<div style='text-align:center; padding-top:40px; color:#555'>재료를 선택하세요.</div>"; 
+            gold.style.display = 'none'; return; 
+        }
+        
+        const isGold = selectedPot.some(i => i?.isGolden);
+        gold.style.display = isGold ? 'block' : 'none';
+        
+        let stats = {};
+        // 최댓값 적용 로직 유지
+        selectedPot.forEach(i => { 
+            if(!i) return; 
+            const eff = isGold ? i.golden_effects : i.effects; 
+            Object.keys(eff).forEach(k => {
+                stats[k] = Math.max(stats[k] || 0, eff[k]);
+            }); 
+        });
+
+        let h = "<h4 style='margin:0 0 10px 0; color:#fff; border-bottom:1px solid #333'>최종 요리 효과</h4>";
+        Object.keys(stats).sort().forEach(k => {
+            h += `<div class="stat-row"><span>${statLabels[k]}</span><span class="stat-value ${isGold?'gold-txt':''}">${stats[k].toFixed(1)}</span></div>`;
+        });
+        res.innerHTML = h;
+    }
+
+    function setFilter(k) {
+        currentFilter = k;
+        document.querySelectorAll('.stat-filter-btn').forEach(b => {
+            b.classList.toggle('active', b.innerText === statLabels[k] || (k==='all' && b.id==='btn-all'));
+        });
+        if(window.innerWidth <= 768) toggleSidebar(); 
+        render();
+    }
+
+    function clearPotOnly() { selectedPot = [null, null]; updatePot(); render(); }
+    loadData();
+</script>
+</body>
+</html>
