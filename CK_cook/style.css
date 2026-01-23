@@ -6,7 +6,7 @@
 ::-webkit-scrollbar-thumb { background: #3a3f4b; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #4e9af1; }
 
-/* 2. 전체 레이아웃 고정 */
+/* 2. 전체 레이아웃 */
 html, body { 
     background: var(--bg); 
     color: var(--text); 
@@ -15,12 +15,16 @@ html, body {
     height: 100vh; 
     overflow: hidden; 
     font-size: 14px; 
+    display: flex; 
+    flex-direction: column; 
 }
 
 /* 헤더 */
 header { 
-    height: 55px; 
-    padding: 0 1.5rem; 
+    flex-shrink: 0;
+    min-height: 55px; 
+    height: auto; 
+    padding: 0 1rem; /* 좌우 여백 살짝 줄임 */
     background: var(--panel); 
     border-bottom: 2px solid var(--border); 
     display: flex; 
@@ -28,10 +32,18 @@ header {
     justify-content: space-between; 
     z-index: 1001; 
     box-sizing: border-box;
-    flex-shrink: 0;
     position: relative; 
 }
-.header-left { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+
+/* 타이틀 영역: 남는 공간 모두 차지 */
+.header-left { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    overflow: hidden; 
+    flex: 1; 
+    margin-right: 10px; 
+}
 
 .search-toggle-btn { 
     display: none; 
@@ -41,21 +53,61 @@ header {
     background: none; 
     border: none; 
     padding: 5px; 
+    flex-shrink: 0;
 }
 
+/* ★ 타이틀 한 줄 강제 표시 (공간 확보됨) */
 #appTitle {
     margin: 0;
-    font-size: 1.1rem;
-    white-space: nowrap;
+    font-size: 1.2rem; /* 폰트 살짝 키움 */
+    white-space: nowrap; 
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis; 
 }
 
-.lang-switch { display: flex; gap: 5px; flex-shrink: 0; }
-.lang-btn { background: #0c0f14; border: 1px solid var(--border); color: #888; padding: 4px 8px; cursor: pointer; border-radius: 4px; font-size: 12px; }
-.lang-btn.active { border-color: var(--accent); color: var(--accent); font-weight: bold; }
+/* ★ 언어 선택 (지구본) 스타일 */
+.lang-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+.lang-globe-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+}
+.lang-dropdown {
+    display: none; /* 기본 숨김 */
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 5px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    z-index: 2000;
+    width: 100px;
+    flex-direction: column;
+}
+.lang-dropdown.show { display: flex; }
 
-/* 모바일 검색창 디자인 */
+.lang-item {
+    background: none;
+    border: none;
+    color: #bbb;
+    padding: 10px;
+    text-align: left;
+    cursor: pointer;
+    border-bottom: 1px solid #2a2e37;
+}
+.lang-item:last-child { border-bottom: none; }
+.lang-item:hover { background: #2a2e37; color: #fff; }
+.lang-item.active { color: var(--accent); font-weight: bold; }
+
+/* 모바일 검색창 */
 .mobile-search-bar {
     position: absolute;
     top: 0;
@@ -69,7 +121,6 @@ header {
     box-sizing: border-box;
     z-index: 1002;
 }
-
 .mobile-search-input {
     flex: 1;
     height: 36px;
@@ -82,7 +133,6 @@ header {
     outline: none;
 }
 .mobile-search-input:focus { border-color: var(--accent); }
-
 .search-close-btn {
     background: none;
     border: none;
@@ -95,13 +145,13 @@ header {
     align-items: center;
     height: 100%;
 }
-.search-close-btn:hover { color: #fff; }
 
 /* 3. 메인 레이아웃 */
 .main-layout { 
     display: grid; 
     grid-template-columns: 280px 1fr 340px; 
-    height: calc(100vh - 55px); 
+    flex: 1; /* 남은 높이 자동 채움 */
+    min-height: 0;
     overflow: hidden; 
     position: relative; 
 }
@@ -205,7 +255,6 @@ footer { padding: 15px 10px; border-top: 1px solid #2a2e37; text-align: center; 
 .modal-btn { display: block; width: 100%; padding: 10px; margin-bottom: 5px; background: #2c3e50; border: 1px solid #3a3f4b; color: #e0e0e0; border-radius: 6px; text-align: left; cursor: pointer; }
 .modal-btn:hover { background: #3a4b5c; }
 
-/* ★ 모바일 버튼 활성 상태 */
 .mobile-cat-btn.active, .modal-btn.active {
     background: var(--accent);
     color: white;
@@ -220,7 +269,6 @@ footer { padding: 15px 10px; border-top: 1px solid #2a2e37; text-align: center; 
 
 @media (max-width: 768px) {
     .search-toggle-btn { display: block; }
-    .hamburger { display: none; }
     
     .main-layout { 
         grid-template-columns: 1fr; 
@@ -236,8 +284,6 @@ footer { padding: 15px 10px; border-top: 1px solid #2a2e37; text-align: center; 
     }
     .mobile-cat-btn { background: #252a34; border: 1px solid var(--border); color: #aaa; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; flex-shrink: 0; }
     
-    /* 여기서도 active 스타일 적용되지만, 위에서 공통으로 정의함 */
-
     .content-toolbar { justify-content: space-between; margin-bottom: 10px; flex-shrink: 0; }
     .sort-container { max-width: 100%; }
 

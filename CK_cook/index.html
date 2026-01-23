@@ -11,12 +11,16 @@
 <header>
     <div class="header-left">
         <button class="search-toggle-btn" onclick="toggleMobileSearch()">🔍</button>
-        <h3 style="margin:0;" id="appTitle">Core Keeper Cook</h3>
+        <h3 id="appTitle">Core Keeper Cook</h3>
     </div>
-    <div class="lang-switch">
-        <button class="lang-btn active" id="btn_ko" onclick="setLang('ko')">KO</button>
-        <button class="lang-btn" id="btn_en" onclick="setLang('en')">EN</button>
-        <button class="lang-btn" id="btn_ja" onclick="setLang('ja')">JA</button>
+
+    <div class="lang-wrapper">
+        <button class="lang-globe-btn" onclick="toggleLangMenu()">🌐</button>
+        <div id="langMenu" class="lang-dropdown">
+            <button class="lang-item" id="btn_ko" onclick="selectLang('ko')">한국어</button>
+            <button class="lang-item" id="btn_en" onclick="selectLang('en')">English</button>
+            <button class="lang-item" id="btn_ja" onclick="selectLang('ja')">日本語</button>
+        </div>
     </div>
 
     <div id="mobileSearchContainer" class="mobile-search-bar" style="display:none;">
@@ -72,7 +76,6 @@
         </div>
 
         <div id="goldAlert" class="golden-notice"></div>
-        
         <div id="singleItemNotice" class="single-notice" style="display:none;"></div>
 
         <div class="cooking-pot">
@@ -86,9 +89,7 @@
             </div>
         </div>
         <div class="result-stats" id="resultStats"></div>
-        
         <div id="foodDisclaimer" class="disclaimer-text"></div>
-        
         <button class="reset-btn" id="btn_reset" onclick="clearPotOnly()"></button>
     </aside>
 </div>

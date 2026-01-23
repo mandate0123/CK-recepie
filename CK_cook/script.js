@@ -78,6 +78,19 @@ async function init() {
         
         window.addEventListener('resize', render);
 
+        // ★ 언어 메뉴 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            if (!event.target.matches('.lang-globe-btn')) {
+                var dropdowns = document.getElementsByClassName("lang-dropdown");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
     } catch (e) {
         console.error(e);
         document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:20px'>Data Load Error!</h2>";
@@ -91,10 +104,22 @@ function t(path) {
     return obj || path;
 }
 
+// ★ 언어 메뉴 토글
+function toggleLangMenu() {
+    document.getElementById("langMenu").classList.toggle("show");
+}
+
+// ★ 언어 선택 핸들러
+function selectLang(lang) {
+    setLang(lang);
+    document.getElementById("langMenu").classList.remove("show"); // 선택 후 닫기
+}
+
 function setLang(lang) {
     currentLang = lang;
     localStorage.setItem('siteLang', lang);
 
+    // ★ 메뉴 내부의 active 클래스 업데이트
     document.getElementById('btn_ko').classList.toggle('active', lang === 'ko');
     document.getElementById('btn_en').classList.toggle('active', lang === 'en');
     document.getElementById('btn_ja').classList.toggle('active', lang === 'ja');
@@ -196,7 +221,6 @@ function createCategoryGroup(container, catKey, title, items, type) {
     container.appendChild(div);
 }
 
-// ★ 모바일 필터 버튼 생성 (Active 로직 추가)
 function createMobileFilters() {
     const container = document.getElementById('mobileCategoryFilters');
     container.innerHTML = '';
@@ -210,7 +234,6 @@ function createMobileFilters() {
     for (const [catKey, stats] of Object.entries(filterCategories)) {
         const btn = document.createElement('button');
         
-        // 현재 선택된 필터가 이 카테고리에 속하면 활성화
         const isActive = stats.includes(currentFilter);
         btn.className = `mobile-cat-btn ${isActive ? 'active' : ''}`;
         
@@ -228,7 +251,6 @@ function createMobileFilters() {
     container.appendChild(locBtn);
 }
 
-// ★ 모달 열기 (Active 로직 추가)
 function openModal(catKey, type) {
     const modal = document.getElementById('filterModal');
     const title = document.getElementById('modalTitle');
@@ -242,7 +264,6 @@ function openModal(catKey, type) {
     items.forEach(key => {
         const btn = document.createElement('button');
         
-        // 현재 선택된 필터와 일치하면 활성화
         const isActive = (currentFilter === key);
         btn.className = `modal-btn ${isActive ? 'active' : ''}`;
         
