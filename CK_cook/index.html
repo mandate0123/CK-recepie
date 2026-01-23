@@ -26,6 +26,15 @@
             <input type="text" id="searchInput" class="search-input" oninput="render()">
         </div>
         
+        <div class="sort-container">
+            <select id="sortSelect" class="sort-select" onchange="setSort(this.value)">
+                <option value="default">Sort: Default</option>
+                <option value="value">Sort: Value (High)</option>
+                <option value="location">Sort: Location</option>
+                <option value="category">Sort: Category</option>
+            </select>
+        </div>
+        
         <div class="filter-category">
             <button class="stat-filter-btn active" id="btn-all" onclick="setFilter('all', 'all')">
                 <span id="txt-show-all">All Ingredients</span>
@@ -68,6 +77,11 @@
         <button class="reset-btn" id="btn_reset" onclick="clearPotOnly()"></button>
     </aside>
 </div>
+
+<footer>
+    Core Keeper content and materials are trademarks and copyrights of Pugstorm. <br>
+    This website is an unofficial fan-made tool and is not affiliated with Pugstorm.
+</footer>
 
 <script src="script.js"></script>
 </body>

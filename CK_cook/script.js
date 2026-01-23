@@ -12,30 +12,25 @@ const locationList = [
     "cattle_drop", "ghorm_boss", "feeding_dodo", "worm_boss", "halloween"
 ];
 
-let db = [], translations = {}, currentLang = 'en'; // 기본값은 en으로 설정 (감지로 덮어씌워짐)
+let db = [], translations = {}, currentLang = 'en'; 
 let selectedPot = [null, null];
 let currentFilter = 'all'; 
 let filterType = 'all'; 
+let currentSort = 'default';
 let isSkillActive = false; 
 
 let categoryState = JSON.parse(localStorage.getItem('categoryState')) || {};
 
-// ★ 언어 감지 헬퍼 함수
 function getInitialLang() {
-    // 1순위: 사용자가 이전에 선택한 언어 (캐시)
     const savedLang = localStorage.getItem('siteLang');
     if (savedLang && ['ko', 'en', 'ja'].includes(savedLang)) {
         return savedLang;
     }
-
-    // 2순위: 브라우저 설정 언어
-    const browserLang = navigator.language || navigator.userLanguage; // 예: 'ko-KR', 'en-US', 'ja'
+    const browserLang = navigator.language || navigator.userLanguage; 
     if (browserLang) {
         if (browserLang.startsWith('ko')) return 'ko';
         if (browserLang.startsWith('ja')) return 'ja';
     }
-
-    // 3순위: 기본값 (영어)
     return 'en';
 }
 
@@ -49,14 +44,36 @@ async function init() {
         ]);
         db = data;
         
-        // 안내 문구 주입
-        if(ko && ko.ui) ko.ui.single_notice = "재료를 하나만 선택 시, 해당 재료를 2개 넣은 결과가 표시됩니다.";
-        if(en && en.ui) en.ui.single_notice = "Selecting one ingredient shows the result of cooking two of them.";
-        if(ja && ja.ui) ja.ui.single_notice = "食材を1つだけ選択すると、それを2つ使った結果が表示されます。";
+        const injectTexts = (obj, lang) => {
+            if(!obj.ui) obj.ui = {};
+            if(lang === 'ko') {
+                obj.ui.single_notice = "재료를 하나만 선택 시, 해당 재료를 2개 넣은 결과가 표시됩니다.";
+                obj.ui.sort_default = "정렬: 기본";
+                obj.ui.sort_value = "정렬: 상승치 순";
+                obj.ui.sort_location = "정렬: 입수처 순";
+                obj.ui.sort_category = "정렬: 품목별";
+            }
+            if(lang === 'en') {
+                obj.ui.single_notice = "Selecting one ingredient shows the result of cooking two of them.";
+                obj.ui.sort_default = "Sort: Default";
+                obj.ui.sort_value = "Sort: Value (High)";
+                obj.ui.sort_location = "Sort: Location";
+                obj.ui.sort_category = "Sort: Category";
+            }
+            if(lang === 'ja') {
+                obj.ui.single_notice = "食材を1つだけ選択すると、その食材を2つ使った結果が表示されます。";
+                obj.ui.sort_default = "並び替え: デフォルト";
+                obj.ui.sort_value = "並び替え: 上昇値順";
+                obj.ui.sort_location = "並び替え: 入手場所順";
+                obj.ui.sort_category = "並び替え: カテゴリ順";
+            }
+        };
+
+        injectTexts(ko, 'ko');
+        injectTexts(en, 'en');
+        injectTexts(ja, 'ja');
 
         translations = { ko, en, ja };
-        
-        // ★ 초기 언어 설정 (감지 로직 적용)
         setLang(getInitialLang());
 
     } catch (e) {
@@ -74,8 +91,6 @@ function t(path) {
 
 function setLang(lang) {
     currentLang = lang;
-    
-    // ★ 언어 선택 시 로컬 스토리지에 저장
     localStorage.setItem('siteLang', lang);
 
     document.getElementById('btn_ko').classList.toggle('active', lang === 'ko');
@@ -87,6 +102,13 @@ function setLang(lang) {
     document.getElementById('txt-show-all').innerText = t('ui.show_all');
     document.getElementById('btn_reset').innerText = t('ui.reset_btn');
     
+    // 정렬 옵션 텍스트 갱신
+    const sortSelect = document.getElementById('sortSelect');
+    sortSelect.options[0].text = t('ui.sort_default');
+    sortSelect.options[1].text = t('ui.sort_value');
+    sortSelect.options[2].text = t('ui.sort_location');
+    sortSelect.options[3].text = t('ui.sort_category');
+
     const disclaimerMap = {
         'ko': "* 실제 포만감 수치는 요리 조합식에 따라 달라질 수 있습니다.",
         'en': "* Actual food value may vary depending on the recipe.",
@@ -96,6 +118,12 @@ function setLang(lang) {
 
     createSidebarUI(); 
     render(); updatePot();      
+}
+
+// 정렬 설정 함수
+function setSort(val) {
+    currentSort = val;
+    render();
 }
 
 function toggleSkillMode() {
@@ -154,18 +182,48 @@ function render() {
     grid.innerHTML = '';
     const q = document.getElementById('searchInput').value.toLowerCase();
     
-    db.filter(i => {
+    // 1. 필터링
+    let filteredItems = db.filter(i => {
         let match = true;
         if (filterType === 'stat') match = !!i.effects[currentFilter];
         else if (filterType === 'loc') match = (i.loc_id === currentFilter);
         const name = t('items.' + i.id).toLowerCase();
         return match && name.includes(q);
-    }).forEach(i => {
+    });
+
+    // 2. 정렬
+    if (currentSort === 'value' && filterType === 'stat') {
+        // 스탯 필터가 켜져있을 때만 수치 정렬 유효
+        filteredItems.sort((a, b) => (b.effects[currentFilter] || 0) - (a.effects[currentFilter] || 0));
+    } else if (currentSort === 'location') {
+        filteredItems.sort((a, b) => locationList.indexOf(a.loc_id) - locationList.indexOf(b.loc_id));
+    } else if (currentSort === 'category') {
+        filteredItems.sort((a, b) => a.category.localeCompare(b.category));
+    }
+    // default는 DB 순서 유지
+
+    // 3. 그리기
+    filteredItems.forEach(i => {
         const card = document.createElement('div');
         const isSelected = selectedPot.includes(i);
         card.className = `item-card ${isSelected ? 'selected' : ''} ${i.isGolden ? 'is-golden' : ''}`;
         const rarityClass = i.rarity ? `rarity-${i.rarity}` : 'rarity-common';
-        card.innerHTML = `<img src="${i.img}" class="item-icon" alt="${i.id}"><br><span class="item-name ${rarityClass}">${t('items.' + i.id)}</span><span class="item-loc">${t('locations.' + i.loc_id)}</span>`;
+        
+        // 스탯 배지: 스탯 필터가 켜져있을 때만 표시
+        let statBadge = '';
+        if (filterType === 'stat' && currentFilter !== 'all') {
+            const val = i.effects[currentFilter];
+            if (val) {
+                statBadge = `<div class="stat-badge">+${val}</div>`;
+            }
+        }
+
+        card.innerHTML = `
+            ${statBadge}
+            <img src="${i.img}" class="item-icon" alt="${i.id}"><br>
+            <span class="item-name ${rarityClass}">${t('items.' + i.id)}</span>
+            <span class="item-loc">${t('locations.' + i.loc_id)}</span>
+        `;
         card.onclick = () => addToPot(i);
         grid.appendChild(card);
     });
