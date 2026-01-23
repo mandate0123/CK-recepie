@@ -1,42 +1,40 @@
 # Core Keeper Cooking Simulator
 
-A web-based tool designed to simulate cooking results for the game **Core Keeper**. This simulator allows users to select ingredients, view potential stat buffs, and calculate results based on item rarity and the "Master Chef" skill.
+Core Keeper Cooking Simulator is a fan-made tool designed to help players predict cooking results.
+코어 키퍼(Core Keeper)의 요리 결과를 미리 확인할 수 있는 팬 메이드 시뮬레이터입니다.
 
-## 🌟 Key Features
+---
 
-* **Accurate Stat Calculation**:
-    * Implements the "Max Value" logic (highest stat takes precedence).
-    * Correctly calculates multipliers for **Rare (1.25x)** and **Epic (1.5x)** dishes.
-    * **Note**: Buff durations do not scale with rarity, only stat values do.
-* **Master Chef Skill Simulation**:
-    * **Toggle Switch**: Simulates the chance of upgrading food rarity.
-    * **Dynamic Logic**:
-        * **Normal Ingredients**: Toggles between Common (1.0x) and Rare (1.25x).
-        * **Golden/Legendary Ingredients**: Toggles between Rare (1.25x) and Epic (1.5x).
-* **Smart Cooking Pot**:
-    * **Single Ingredient Mode**: Selecting only one ingredient automatically calculates the result as if two of the same ingredient were used.
-    * **Toggle Selection**: Click an ingredient to add it; click it again (in the pot or list) to remove it.
-* **Internationalization (i18n)**:
-    * Supports **English (EN)**, **Korean (KO)**, and **Japanese (JA)**.
-    * **Auto-Detection**: Automatically detects browser language on first load.
-    * **Persistence**: Saves your language preference to the browser's Local Storage.
-* **Visual Rarity Indicators**:
-    * Ingredient names are color-coded based on their in-game rarity (Common, Uncommon, Rare, Epic, Legendary).
-* **Category Filtering**:
-    * Filter ingredients by stats (Survival, Defense, Attack, Utility) or by Source Location (Biomes).
-    * Collapsible category menus for a cleaner UI.
+## 🇰🇷 한국어
 
-## 📂 Project Structure
+### 주요 기능
+1. **요리 시뮬레이션**: 재료를 클릭(선택)하면 즉시 조리 결과와 능력치를 확인할 수 있습니다.
+2. **필터링**: 원하는 능력치나 카테고리별로 재료를 필터링할 수 있습니다.
+3. **정렬 (Sorting)**: 필터링된 결과 내에서 수치순, 입수처순 등 다양한 기준으로 정렬이 가능합니다.
+4. **업데이트**: 게임 업데이트로 신규 아이템이 추가될 경우, 데이터가 확보되는 대로 업데이트할 예정입니다.
 
-The project has been refactored for better maintainability:
+### 최근 변경 사항 (Changelog)
+* **데이터베이스 수정**: 불필요한 데이터를 삭제하고, 잘못된 정보(수치 오류 등)를 수정했습니다.
+* **로직 수정**: 요리 결과 계산 로직을 게임 내 공식과 동일하게 정상화했습니다.
+    * *계산 방식의 차이로 인해 0.1 정도의 표기 오차가 있을 수 있습니다.*
 
-```text
-Root/
-├── index.html          # Main structure
-├── style.css           # Styling and visual effects
-├── script.js           # Core logic, DOM manipulation, and calculation
-├── data.json           # Ingredient database (Stats, IDs, Image paths)
-└── locales/            # Translation files
-    ├── en.json
-    ├── ko.json
-    └── ja.json
+### 저작권 (Disclaimer)
+이 프로젝트는 비공식 팬 메이드(Fan-made) 툴입니다. 사용된 모든 이미지, 데이터, 내부 자료 등의 저작권은 **Pugstorm**에 있습니다.
+
+---
+
+## 🇺🇸 English
+
+### Key Features
+1. **Cooking Simulation**: Click on ingredients to instantly see the expected cooking results and stats.
+2. **Filtering**: You can filter ingredients by specific stats or categories.
+3. **Sorting**: Various sorting options (by value, location, etc.) are available after filtering.
+4. **Updates**: New items will be added as soon as data becomes available following game updates.
+
+### Recent Changes (Changelog)
+* **Database Cleanup**: Removed unnecessary data and corrected erroneous information.
+* **Logic Fix**: Fixed the cooking result calculation logic to match the actual game mechanics.
+    * *Note: There may be a margin of error of 0.1 due to the calculation method.*
+
+### Disclaimer
+This project is an unofficial fan-made tool. All rights, content, and materials belong to **Pugstorm**.****
