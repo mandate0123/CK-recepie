@@ -16,7 +16,7 @@ let db = [], translations = {}, currentLang = 'en';
 let selectedPot = [null, null];
 let currentFilter = 'all'; 
 let filterType = 'all'; 
-let currentSort = 'default';
+let currentSort = 'default'; 
 let isSkillActive = false; 
 
 let categoryState = JSON.parse(localStorage.getItem('categoryState')) || {};
@@ -61,7 +61,7 @@ async function init() {
                 obj.ui.sort_category = "Sort: Category";
             }
             if(lang === 'ja') {
-                obj.ui.single_notice = "食材を1つだけ選択すると、その食材を2つ使った結果が表示されます。";
+                obj.ui.single_notice = "食材を1つだけ選択すると、それを2つ使った結果が表示されます。";
                 obj.ui.sort_default = "並び替え: デフォルト";
                 obj.ui.sort_value = "並び替え: 上昇値順";
                 obj.ui.sort_location = "並び替え: 入手場所順";
@@ -75,6 +75,8 @@ async function init() {
 
         translations = { ko, en, ja };
         setLang(getInitialLang());
+        
+        window.addEventListener('resize', render);
 
     } catch (e) {
         console.error(e);
@@ -98,11 +100,14 @@ function setLang(lang) {
     document.getElementById('btn_ja').classList.toggle('active', lang === 'ja');
     
     document.getElementById('appTitle').innerText = t('ui.title');
-    document.getElementById('searchInput').placeholder = t('ui.search_placeholder');
-    document.getElementById('txt-show-all').innerText = t('ui.show_all');
+    document.getElementById('searchInputPC').placeholder = t('ui.search_placeholder');
+    document.getElementById('searchInputMobile').placeholder = t('ui.search_placeholder');
+    
+    const txtShowAll = document.getElementById('txt-show-all');
+    if (txtShowAll) txtShowAll.innerText = t('ui.show_all');
+
     document.getElementById('btn_reset').innerText = t('ui.reset_btn');
     
-    // 정렬 옵션 텍스트 갱신
     const sortSelect = document.getElementById('sortSelect');
     sortSelect.options[0].text = t('ui.sort_default');
     sortSelect.options[1].text = t('ui.sort_value');
@@ -117,10 +122,24 @@ function setLang(lang) {
     document.getElementById('foodDisclaimer').innerText = disclaimerMap[lang] || disclaimerMap['ko'];
 
     createSidebarUI(); 
+    createMobileFilters();
     render(); updatePot();      
 }
 
-// 정렬 설정 함수
+function toggleMobileSearch() {
+    const bar = document.getElementById('mobileSearchContainer');
+    const input = document.getElementById('searchInputMobile');
+    
+    if (bar.style.display === 'none') {
+        bar.style.display = 'flex';
+        input.focus();
+    } else {
+        bar.style.display = 'none';
+        input.value = '';
+        render(); 
+    }
+}
+
 function setSort(val) {
     currentSort = val;
     render();
@@ -177,12 +196,106 @@ function createCategoryGroup(container, catKey, title, items, type) {
     container.appendChild(div);
 }
 
+// ★ 모바일 필터 버튼 생성 (Active 로직 추가)
+function createMobileFilters() {
+    const container = document.getElementById('mobileCategoryFilters');
+    container.innerHTML = '';
+
+    const allBtn = document.createElement('button');
+    allBtn.className = `mobile-cat-btn ${currentFilter === 'all' ? 'active' : ''}`;
+    allBtn.innerText = t('ui.show_all') || "All";
+    allBtn.onclick = () => setFilter('all', 'all');
+    container.appendChild(allBtn);
+
+    for (const [catKey, stats] of Object.entries(filterCategories)) {
+        const btn = document.createElement('button');
+        
+        // 현재 선택된 필터가 이 카테고리에 속하면 활성화
+        const isActive = stats.includes(currentFilter);
+        btn.className = `mobile-cat-btn ${isActive ? 'active' : ''}`;
+        
+        btn.innerText = t('categories.' + catKey);
+        btn.onclick = () => openModal(catKey, 'stat');
+        container.appendChild(btn);
+    }
+
+    const locBtn = document.createElement('button');
+    const isLocActive = locationList.includes(currentFilter);
+    locBtn.className = `mobile-cat-btn ${isLocActive ? 'active' : ''}`;
+    
+    locBtn.innerText = t('ui.loc_category');
+    locBtn.onclick = () => openModal('locations', 'loc');
+    container.appendChild(locBtn);
+}
+
+// ★ 모달 열기 (Active 로직 추가)
+function openModal(catKey, type) {
+    const modal = document.getElementById('filterModal');
+    const title = document.getElementById('modalTitle');
+    const body = document.getElementById('modalBody');
+
+    title.innerText = catKey === 'locations' ? t('ui.loc_category') : t('categories.' + catKey);
+    body.innerHTML = '';
+
+    const items = type === 'stat' ? filterCategories[catKey] : locationList;
+
+    items.forEach(key => {
+        const btn = document.createElement('button');
+        
+        // 현재 선택된 필터와 일치하면 활성화
+        const isActive = (currentFilter === key);
+        btn.className = `modal-btn ${isActive ? 'active' : ''}`;
+        
+        const labelKey = type === 'stat' ? `stats.${key}` : `locations.${key}`;
+        btn.innerText = t(labelKey);
+        
+        btn.onclick = () => {
+            setFilter(key, type);
+            closeModal();
+        };
+        body.appendChild(btn);
+    });
+
+    modal.style.display = 'flex';
+}
+
+function closeModal(e) {
+    if (!e || e.target.id === 'filterModal' || e.target.className === 'close-modal') {
+        document.getElementById('filterModal').style.display = 'none';
+    }
+}
+
+function setFilter(key, type) {
+    currentFilter = key;
+    filterType = type; 
+    
+    const btnAll = document.getElementById('btn-all');
+    if (btnAll) {
+        if (key === 'all') btnAll.classList.add('active');
+        else btnAll.classList.remove('active');
+    }
+    document.querySelectorAll('.stat-filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText === t((type === 'stat' ? 'stats.' : 'locations.') + key));
+    });
+
+    createMobileFilters(); 
+    render();
+}
+
 function render() {
     const grid = document.getElementById('ingredientGrid');
     grid.innerHTML = '';
-    const q = document.getElementById('searchInput').value.toLowerCase();
     
-    // 1. 필터링
+    const searchPC = document.getElementById('searchInputPC');
+    const searchMobile = document.getElementById('searchInputMobile');
+    
+    let q = "";
+    if (window.innerWidth >= 769) {
+        q = searchPC ? searchPC.value.toLowerCase() : "";
+    } else {
+        q = searchMobile ? searchMobile.value.toLowerCase() : "";
+    }
+    
     let filteredItems = db.filter(i => {
         let match = true;
         if (filterType === 'stat') match = !!i.effects[currentFilter];
@@ -191,25 +304,20 @@ function render() {
         return match && name.includes(q);
     });
 
-    // 2. 정렬
     if (currentSort === 'value' && filterType === 'stat') {
-        // 스탯 필터가 켜져있을 때만 수치 정렬 유효
         filteredItems.sort((a, b) => (b.effects[currentFilter] || 0) - (a.effects[currentFilter] || 0));
     } else if (currentSort === 'location') {
         filteredItems.sort((a, b) => locationList.indexOf(a.loc_id) - locationList.indexOf(b.loc_id));
     } else if (currentSort === 'category') {
         filteredItems.sort((a, b) => a.category.localeCompare(b.category));
     }
-    // default는 DB 순서 유지
 
-    // 3. 그리기
     filteredItems.forEach(i => {
         const card = document.createElement('div');
         const isSelected = selectedPot.includes(i);
         card.className = `item-card ${isSelected ? 'selected' : ''} ${i.isGolden ? 'is-golden' : ''}`;
         const rarityClass = i.rarity ? `rarity-${i.rarity}` : 'rarity-common';
         
-        // 스탯 배지: 스탯 필터가 켜져있을 때만 표시
         let statBadge = '';
         if (filterType === 'stat' && currentFilter !== 'all') {
             const val = i.effects[currentFilter];
@@ -220,7 +328,7 @@ function render() {
 
         card.innerHTML = `
             ${statBadge}
-            <img src="${i.img}" class="item-icon" alt="${i.id}"><br>
+            <img src="${i.img}" class="item-icon" alt="${i.id}">
             <span class="item-name ${rarityClass}">${t('items.' + i.id)}</span>
             <span class="item-loc">${t('locations.' + i.loc_id)}</span>
         `;
@@ -408,12 +516,17 @@ function updatePot() {
 function setFilter(key, type) {
     currentFilter = key;
     filterType = type; 
+    
     const btnAll = document.getElementById('btn-all');
-    if (btnAll) btnAll.classList.remove('active');
-    document.querySelectorAll('.stat-filter-btn').forEach(btn => btn.classList.remove('active'));
-    if (key === 'all' && btnAll) btnAll.classList.add('active');
-    createSidebarUI(); 
-    if(window.innerWidth <= 768) toggleSidebar(); 
+    if (btnAll) {
+        if (key === 'all') btnAll.classList.add('active');
+        else btnAll.classList.remove('active');
+    }
+    document.querySelectorAll('.stat-filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText === t((type === 'stat' ? 'stats.' : 'locations.') + key));
+    });
+
+    createMobileFilters(); 
     render();
 }
 

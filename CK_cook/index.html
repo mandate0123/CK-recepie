@@ -10,7 +10,7 @@
 
 <header>
     <div class="header-left">
-        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <button class="search-toggle-btn" onclick="toggleMobileSearch()">🔍</button>
         <h3 style="margin:0;" id="appTitle">Core Keeper Cook</h3>
     </div>
     <div class="lang-switch">
@@ -18,33 +18,48 @@
         <button class="lang-btn" id="btn_en" onclick="setLang('en')">EN</button>
         <button class="lang-btn" id="btn_ja" onclick="setLang('ja')">JA</button>
     </div>
+
+    <div id="mobileSearchContainer" class="mobile-search-bar" style="display:none;">
+        <input type="text" id="searchInputMobile" class="mobile-search-input" placeholder="Search..." oninput="render()">
+        <button class="search-close-btn" onclick="toggleMobileSearch()">✕</button>
+    </div>
 </header>
 
 <div class="main-layout">
     <aside class="sidebar" id="sidebar">
         <div class="search-box">
-            <input type="text" id="searchInput" class="search-input" oninput="render()">
+            <input type="text" id="searchInputPC" class="search-input" oninput="render()">
         </div>
         
-        <div class="sort-container">
-            <select id="sortSelect" class="sort-select" onchange="setSort(this.value)">
-                <option value="default">Sort: Default</option>
-                <option value="value">Sort: Value (High)</option>
-                <option value="location">Sort: Location</option>
-                <option value="category">Sort: Category</option>
-            </select>
-        </div>
-        
-        <div class="filter-category">
-            <button class="stat-filter-btn active" id="btn-all" onclick="setFilter('all', 'all')">
-                <span id="txt-show-all">All Ingredients</span>
-            </button>
+        <div class="pc-filters">
+            <div class="filter-category">
+                <button class="stat-filter-btn active" id="btn-all" onclick="setFilter('all', 'all')">
+                    <span id="txt-show-all">All Ingredients</span>
+                </button>
+            </div>
+            <div id="dynamicFilters"></div>
         </div>
 
-        <div id="dynamicFilters"></div>
+        <footer>
+            Core Keeper content and materials are trademarks and copyrights of Pugstorm. <br>
+            This website is an unofficial fan-made tool and is not affiliated with Pugstorm.
+        </footer>
     </aside>
 
     <main class="content">
+        <div id="mobileCategoryFilters" class="mobile-category-bar"></div>
+
+        <div class="content-toolbar">
+            <div class="sort-container">
+                <select id="sortSelect" class="sort-select" onchange="setSort(this.value)">
+                    <option value="default">Sort: Default</option>
+                    <option value="value">Sort: Value (High)</option>
+                    <option value="location">Sort: Location</option>
+                    <option value="category">Sort: Category</option>
+                </select>
+            </div>
+        </div>
+
         <div class="ingredient-grid" id="ingredientGrid"></div>
     </main>
 
@@ -78,10 +93,15 @@
     </aside>
 </div>
 
-<footer>
-    Core Keeper content and materials are trademarks and copyrights of Pugstorm. <br>
-    This website is an unofficial fan-made tool and is not affiliated with Pugstorm.
-</footer>
+<div id="filterModal" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Category</h3>
+            <button class="close-modal" onclick="closeModal(null)">✕</button>
+        </div>
+        <div id="modalBody" class="modal-body"></div>
+    </div>
+</div>
 
 <script src="script.js"></script>
 </body>
