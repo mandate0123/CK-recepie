@@ -48,24 +48,27 @@ async function init() {
             if(!obj.ui) obj.ui = {};
             if(lang === 'ko') {
                 obj.ui.single_notice = "재료를 하나만 선택 시, 해당 재료를 2개 넣은 결과가 표시됩니다.";
-                obj.ui.sort_default = "정렬: 기본";
-                obj.ui.sort_value = "정렬: 상승치 순";
-                obj.ui.sort_location = "정렬: 입수처 순";
-                obj.ui.sort_category = "정렬: 품목별";
+                obj.ui.sort_default = "기본";
+                obj.ui.sort_value = "상승치";
+                obj.ui.sort_location = "입수처";
+                obj.ui.sort_category = "품목별";
+                obj.ui.empty_pot = "재료를 선택하세요.";
             }
             if(lang === 'en') {
                 obj.ui.single_notice = "Selecting one ingredient shows the result of cooking two of them.";
-                obj.ui.sort_default = "Sort: Default";
-                obj.ui.sort_value = "Sort: Value (High)";
-                obj.ui.sort_location = "Sort: Location";
-                obj.ui.sort_category = "Sort: Category";
+                obj.ui.sort_default = "Default";
+                obj.ui.sort_value = "Value";
+                obj.ui.sort_location = "Loc";
+                obj.ui.sort_category = "Cat";
+                obj.ui.empty_pot = "Select ingredients.";
             }
             if(lang === 'ja') {
-                obj.ui.single_notice = "食材を1つだけ選択すると、それを2つ使った結果が表示されます。";
-                obj.ui.sort_default = "並び替え: デフォルト";
-                obj.ui.sort_value = "並び替え: 上昇値順";
-                obj.ui.sort_location = "並び替え: 入手場所順";
-                obj.ui.sort_category = "並び替え: カテゴリ順";
+                obj.ui.single_notice = "食材を1つだけ選択すると、同じ素材を2つ使った結果が表示されます。";
+                obj.ui.sort_default = "基本";
+                obj.ui.sort_value = "値順";
+                obj.ui.sort_location = "場所";
+                obj.ui.sort_category = "種類";
+                obj.ui.empty_pot = "食材を選択してください。";
             }
         };
 
@@ -75,10 +78,8 @@ async function init() {
 
         translations = { ko, en, ja };
         setLang(getInitialLang());
-        
         window.addEventListener('resize', render);
 
-        // ★ 언어 메뉴 외부 클릭 시 닫기
         window.onclick = function(event) {
             if (!event.target.matches('.lang-globe-btn')) {
                 var dropdowns = document.getElementsByClassName("lang-dropdown");
@@ -93,7 +94,7 @@ async function init() {
 
     } catch (e) {
         console.error(e);
-        document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:20px'>Data Load Error!</h2>";
+        document.body.innerHTML = `<h2 style='color:white;text-align:center;margin-top:20px'>Data Load Error!</h2>`;
     }
 }
 
@@ -104,69 +105,83 @@ function t(path) {
     return obj || path;
 }
 
-// ★ 언어 메뉴 토글
 function toggleLangMenu() {
-    document.getElementById("langMenu").classList.toggle("show");
+    const menu = document.getElementById("langMenu");
+    if(menu) menu.classList.toggle("show");
 }
 
-// ★ 언어 선택 핸들러
 function selectLang(lang) {
     setLang(lang);
-    document.getElementById("langMenu").classList.remove("show"); // 선택 후 닫기
+    const menu = document.getElementById("langMenu");
+    if(menu) menu.classList.remove("show"); 
+}
+
+function setTextIfFound(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.innerText = text;
 }
 
 function setLang(lang) {
     currentLang = lang;
     localStorage.setItem('siteLang', lang);
 
-    // ★ 메뉴 내부의 active 클래스 업데이트
-    document.getElementById('btn_ko').classList.toggle('active', lang === 'ko');
-    document.getElementById('btn_en').classList.toggle('active', lang === 'en');
-    document.getElementById('btn_ja').classList.toggle('active', lang === 'ja');
+    ['btn_ko', 'btn_en', 'btn_ja'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.toggle('active', id === `btn_${lang}`);
+    });
     
-    document.getElementById('appTitle').innerText = t('ui.title');
-    document.getElementById('searchInputPC').placeholder = t('ui.search_placeholder');
-    document.getElementById('searchInputMobile').placeholder = t('ui.search_placeholder');
+    setTextIfFound('appTitle', t('ui.title'));
     
-    const txtShowAll = document.getElementById('txt-show-all');
-    if (txtShowAll) txtShowAll.innerText = t('ui.show_all');
+    const pcInput = document.getElementById('searchInputPC');
+    if (pcInput) pcInput.placeholder = t('ui.search_placeholder');
+    
+    const mobileInput = document.getElementById('searchInputMobile');
+    if (mobileInput) mobileInput.placeholder = t('ui.search_placeholder');
+    
+    setTextIfFound('txt-show-all', t('ui.show_all'));
+    setTextIfFound('sort-default', t('ui.sort_default'));
+    setTextIfFound('sort-value', t('ui.sort_value'));
+    setTextIfFound('sort-location', t('ui.sort_location'));
+    setTextIfFound('btn_reset', t('ui.reset_btn'));
 
-    document.getElementById('btn_reset').innerText = t('ui.reset_btn');
-    
     const sortSelect = document.getElementById('sortSelect');
-    sortSelect.options[0].text = t('ui.sort_default');
-    sortSelect.options[1].text = t('ui.sort_value');
-    sortSelect.options[2].text = t('ui.sort_location');
-    sortSelect.options[3].text = t('ui.sort_category');
+    if(sortSelect && sortSelect.options.length > 3) {
+        sortSelect.options[0].text = t('ui.sort_default');
+        sortSelect.options[1].text = t('ui.sort_value');
+        sortSelect.options[2].text = t('ui.sort_location');
+        sortSelect.options[3].text = t('ui.sort_category');
+    }
 
     const disclaimerMap = {
-        'ko': "* 실제 포만감 수치는 요리 조합식에 따라 달라질 수 있습니다.",
+        'ko': "* 최종 포만감 수치는 소재에 따라 달라질 수 있습니다.",
         'en': "* Actual food value may vary depending on the recipe.",
-        'ja': "* 実際の満腹度はレシピによって異なる場合があります。"
+        'ja': "* 最終食べ物値は食材によって変わる場合があります。"
     };
-    document.getElementById('foodDisclaimer').innerText = disclaimerMap[lang] || disclaimerMap['ko'];
+    setTextIfFound('foodDisclaimer', disclaimerMap[lang] || disclaimerMap['ko']);
 
+    updateMobileFilterLabel();
     createSidebarUI(); 
-    createMobileFilters();
     render(); updatePot();      
 }
 
 function toggleMobileSearch() {
     const bar = document.getElementById('mobileSearchContainer');
     const input = document.getElementById('searchInputMobile');
-    
-    if (bar.style.display === 'none') {
+    if (bar && bar.style.display === 'none') {
         bar.style.display = 'flex';
-        input.focus();
-    } else {
+        if(input) input.focus();
+    } else if(bar) {
         bar.style.display = 'none';
-        input.value = '';
+        if(input) input.value = '';
         render(); 
     }
 }
 
 function setSort(val) {
     currentSort = val;
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-sort') === val);
+    });
     render();
 }
 
@@ -175,10 +190,14 @@ function toggleSkillMode() {
     updatePot(); 
 }
 
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+function toggleSidebar() { 
+    const sb = document.getElementById('sidebar');
+    if(sb) sb.classList.toggle('active'); 
+}
 
 function toggleCategory(catId) {
     const el = document.getElementById(`cat-${catId}`);
+    if(!el) return;
     const isCollapsed = el.classList.contains('collapsed');
     if (isCollapsed) { el.classList.remove('collapsed'); categoryState[catId] = false; } 
     else { el.classList.add('collapsed'); categoryState[catId] = true; }
@@ -187,6 +206,7 @@ function toggleCategory(catId) {
 
 function createSidebarUI() {
     const container = document.getElementById('dynamicFilters');
+    if(!container) return;
     container.innerHTML = '';
     for (const [catKey, stats] of Object.entries(filterCategories)) {
         createCategoryGroup(container, catKey, t('categories.' + catKey), stats, 'stat');
@@ -221,68 +241,55 @@ function createCategoryGroup(container, catKey, title, items, type) {
     container.appendChild(div);
 }
 
-function createMobileFilters() {
-    const container = document.getElementById('mobileCategoryFilters');
-    container.innerHTML = '';
+function openFilterModal() {
+    closeResultPanel(); 
+
+    const modal = document.getElementById('filterModal');
+    const body = document.getElementById('modalBody');
+    if(!modal || !body) return;
+    body.innerHTML = ''; 
+
+    const gridDiv = document.createElement('div');
+    gridDiv.className = 'modal-grid-container';
 
     const allBtn = document.createElement('button');
-    allBtn.className = `mobile-cat-btn ${currentFilter === 'all' ? 'active' : ''}`;
-    allBtn.innerText = t('ui.show_all') || "All";
-    allBtn.onclick = () => setFilter('all', 'all');
-    container.appendChild(allBtn);
+    allBtn.className = `modal-btn ${currentFilter === 'all' ? 'active' : ''}`;
+    allBtn.style.gridColumn = "1 / -1"; 
+    allBtn.innerText = t('ui.show_all') || "All Ingredients";
+    allBtn.onclick = () => { setFilter('all', 'all'); closeModal(); };
+    gridDiv.appendChild(allBtn);
+
+    const appendGroup = (catKey, items, type) => {
+        const groupTitle = document.createElement('div');
+        groupTitle.className = 'modal-group-title';
+        groupTitle.innerText = catKey === 'locations' ? t('ui.loc_category') : t('categories.' + catKey);
+        gridDiv.appendChild(groupTitle);
+
+        items.forEach(key => {
+            const btn = document.createElement('button');
+            const isActive = (currentFilter === key);
+            btn.className = `modal-btn ${isActive ? 'active' : ''}`;
+            const labelKey = type === 'stat' ? `stats.${key}` : `locations.${key}`;
+            btn.innerText = t(labelKey);
+            btn.onclick = () => { setFilter(key, type); closeModal(); };
+            gridDiv.appendChild(btn);
+        });
+    };
 
     for (const [catKey, stats] of Object.entries(filterCategories)) {
-        const btn = document.createElement('button');
-        
-        const isActive = stats.includes(currentFilter);
-        btn.className = `mobile-cat-btn ${isActive ? 'active' : ''}`;
-        
-        btn.innerText = t('categories.' + catKey);
-        btn.onclick = () => openModal(catKey, 'stat');
-        container.appendChild(btn);
+        appendGroup(catKey, stats, 'stat');
     }
+    appendGroup('locations', locationList, 'loc');
 
-    const locBtn = document.createElement('button');
-    const isLocActive = locationList.includes(currentFilter);
-    locBtn.className = `mobile-cat-btn ${isLocActive ? 'active' : ''}`;
-    
-    locBtn.innerText = t('ui.loc_category');
-    locBtn.onclick = () => openModal('locations', 'loc');
-    container.appendChild(locBtn);
-}
-
-function openModal(catKey, type) {
-    const modal = document.getElementById('filterModal');
-    const title = document.getElementById('modalTitle');
-    const body = document.getElementById('modalBody');
-
-    title.innerText = catKey === 'locations' ? t('ui.loc_category') : t('categories.' + catKey);
-    body.innerHTML = '';
-
-    const items = type === 'stat' ? filterCategories[catKey] : locationList;
-
-    items.forEach(key => {
-        const btn = document.createElement('button');
-        
-        const isActive = (currentFilter === key);
-        btn.className = `modal-btn ${isActive ? 'active' : ''}`;
-        
-        const labelKey = type === 'stat' ? `stats.${key}` : `locations.${key}`;
-        btn.innerText = t(labelKey);
-        
-        btn.onclick = () => {
-            setFilter(key, type);
-            closeModal();
-        };
-        body.appendChild(btn);
-    });
-
+    body.appendChild(gridDiv);
     modal.style.display = 'flex';
 }
 
 function closeModal(e) {
+    const modal = document.getElementById('filterModal');
+    if(!modal) return;
     if (!e || e.target.id === 'filterModal' || e.target.className === 'close-modal') {
-        document.getElementById('filterModal').style.display = 'none';
+        modal.style.display = 'none';
     }
 }
 
@@ -299,12 +306,24 @@ function setFilter(key, type) {
         btn.classList.toggle('active', btn.innerText === t((type === 'stat' ? 'stats.' : 'locations.') + key));
     });
 
-    createMobileFilters(); 
+    updateMobileFilterLabel();
     render();
+}
+
+function updateMobileFilterLabel() {
+    const label = document.getElementById('mobileFilterLabel');
+    if (!label) return;
+    if (currentFilter === 'all') {
+        label.innerText = t('ui.show_all');
+    } else {
+        const labelKey = filterType === 'stat' ? `stats.${currentFilter}` : `locations.${currentFilter}`;
+        label.innerText = t(labelKey);
+    }
 }
 
 function render() {
     const grid = document.getElementById('ingredientGrid');
+    if(!grid) return;
     grid.innerHTML = '';
     
     const searchPC = document.getElementById('searchInputPC');
@@ -329,8 +348,6 @@ function render() {
         filteredItems.sort((a, b) => (b.effects[currentFilter] || 0) - (a.effects[currentFilter] || 0));
     } else if (currentSort === 'location') {
         filteredItems.sort((a, b) => locationList.indexOf(a.loc_id) - locationList.indexOf(b.loc_id));
-    } else if (currentSort === 'category') {
-        filteredItems.sort((a, b) => a.category.localeCompare(b.category));
     }
 
     filteredItems.forEach(i => {
@@ -358,6 +375,21 @@ function render() {
     });
 }
 
+function toggleResultPanel() {
+    const panel = document.getElementById('resultPanel');
+    if(panel) panel.classList.toggle('open');
+}
+
+function openResultPanel() {
+    const panel = document.getElementById('resultPanel');
+    if(panel) panel.classList.add('open');
+}
+
+function closeResultPanel() {
+    const panel = document.getElementById('resultPanel');
+    if(panel) panel.classList.remove('open');
+}
+
 function addToPot(item) {
     const existingIdx = selectedPot.indexOf(item);
     if (existingIdx !== -1) {
@@ -375,7 +407,13 @@ function addToPot(item) {
         selectedPot[0] = selectedPot[1];
         selectedPot[1] = item;
     }
-    updatePot(); render();
+    
+    updatePot(); 
+    render();
+    
+    if (window.innerWidth <= 768) {
+        openResultPanel();
+    }
 }
 
 function removeFromPot(idx) { selectedPot[idx] = null; updatePot(); render(); }
@@ -400,24 +438,31 @@ function updatePot() {
     const slot0 = selectedPot[0];
     const slot1 = selectedPot[1];
 
-    const s0Rarity = slot0 && slot0.rarity ? `rarity-${slot0.rarity}` : 'rarity-common';
-    const s1Rarity = slot1 && slot1.rarity ? `rarity-${slot1.rarity}` : 'rarity-common';
+    const elSlot0 = document.getElementById('slot0');
+    const elSlot1 = document.getElementById('slot1');
+    const elName0 = document.getElementById('name0');
+    const elName1 = document.getElementById('name1');
+    const elSlot0Mobile = document.getElementById('slot0_mobile');
+    const elSlot1Mobile = document.getElementById('slot1_mobile');
 
-    document.getElementById('slot0').innerHTML = slot0 ? `<img src="${slot0.img}">` : '?';
-    document.getElementById('name0').innerHTML = slot0 ? `<span class="${s0Rarity}">${t('items.' + slot0.id)}</span>` : '';
-    document.getElementById('slot1').innerHTML = slot1 ? `<img src="${slot1.img}">` : '?';
-    document.getElementById('name1').innerHTML = slot1 ? `<span class="${s1Rarity}">${t('items.' + slot1.id)}</span>` : '';
+    if(elSlot0) elSlot0.innerHTML = slot0 ? `<img src="${slot0.img}">` : '?';
+    if(elSlot0Mobile) elSlot0Mobile.innerHTML = slot0 ? `<img src="${slot0.img}">` : '?';
+    if(elName0) elName0.innerHTML = slot0 ? `<span class="${slot0.rarity ? `rarity-${slot0.rarity}` : 'rarity-common'}">${t('items.' + slot0.id)}</span>` : '';
+    
+    if(elSlot1) elSlot1.innerHTML = slot1 ? `<img src="${slot1.img}">` : '?';
+    if(elSlot1Mobile) elSlot1Mobile.innerHTML = slot1 ? `<img src="${slot1.img}">` : '?';
+    if(elName1) elName1.innerHTML = slot1 ? `<span class="${slot1.rarity ? `rarity-${slot1.rarity}` : 'rarity-common'}">${t('items.' + slot1.id)}</span>` : '';
     
     const res = document.getElementById('resultStats');
     const goldAlert = document.getElementById('goldAlert');
+    const mobileBadge = document.getElementById('mobileRarityBadge');
     const skillToggleContainer = document.getElementById('skillToggleContainer'); 
-    const toggleLabel = document.getElementById('skillToggleLabel');
-    const toggleBtn = document.getElementById('btn_skill_toggle');
     const singleNotice = document.getElementById('singleItemNotice');
 
     if(!slot0 && !slot1) {
-        res.innerHTML = `<div style='text-align:center; padding-top:40px; color:#555'>${t('ui.empty_pot')}</div>`;
-        goldAlert.style.display = 'none';
+        if(res) res.innerHTML = `<div class="empty-msg-container"><div class="empty-msg">${t('ui.empty_pot')}</div></div>`;
+        if(goldAlert) goldAlert.style.display = 'none';
+        if(mobileBadge) mobileBadge.style.display = 'none';
         if(skillToggleContainer) skillToggleContainer.style.display = 'none'; 
         if(singleNotice) singleNotice.style.display = 'none';
         return;
@@ -427,13 +472,9 @@ function updatePot() {
 
     let calcItems = [];
     const activeItems = selectedPot.filter(i => i !== null);
-
     if (activeItems.length === 1) {
         calcItems = [activeItems[0], activeItems[0]];
-        if(singleNotice) {
-            singleNotice.style.display = 'block';
-            singleNotice.innerText = t('ui.single_notice');
-        }
+        if(singleNotice) { singleNotice.style.display = 'block'; singleNotice.innerText = t('ui.single_notice'); }
     } else {
         calcItems = activeItems;
         if(singleNotice) singleNotice.style.display = 'none';
@@ -444,36 +485,53 @@ function updatePot() {
     
     let multiplier = 1.0;
     let gradeText = "";
-    let toggleText = "";
-
-    toggleBtn.className = 'toggle-btn';
+    let shortGradeText = "";
+    let bgClass = ""; 
 
     if (!isSpecial) {
-        toggleText = isSkillActive ? "Master Chef ON (Rare)" : "Master Chef OFF";
         if (isSkillActive) {
             multiplier = 1.25; 
             gradeText = "✨ RARE Dish (x1.25)";
-            toggleBtn.classList.add('active-rare'); 
+            shortGradeText = "Rare x1.25";
+            bgClass = "bg-rare";
         } else {
             multiplier = 1.0; 
             gradeText = "Common Dish (x1.0)";
+            shortGradeText = "Common x1.0";
+            bgClass = "bg-common";
         }
     } else {
-        toggleText = isSkillActive ? "Master Chef ON (Epic)" : "Master Chef OFF";
         if (isSkillActive) {
             multiplier = 1.5; 
             gradeText = "✨ EPIC Dish (x1.5)";
-            toggleBtn.classList.add('active-epic'); 
+            shortGradeText = "Epic x1.5";
+            bgClass = "bg-epic";
         } else {
             multiplier = 1.25; 
             gradeText = "✨ RARE Dish (x1.25)";
+            shortGradeText = "Rare x1.25";
+            bgClass = "bg-rare";
         }
     }
-
-    if (toggleLabel) toggleLabel.innerText = toggleText;
     
-    goldAlert.style.display = 'block';
-    goldAlert.innerText = gradeText;
+    if(goldAlert) {
+        goldAlert.style.display = 'block';
+        goldAlert.innerText = gradeText;
+        goldAlert.className = `golden-notice pc-only-alert ${bgClass}`; 
+    }
+
+    if(mobileBadge) {
+        mobileBadge.style.display = 'block';
+        mobileBadge.innerText = shortGradeText;
+        mobileBadge.className = `mobile-rarity-badge ${bgClass}`;
+    }
+
+    const mobBtn = document.getElementById('btn_skill_toggle_mobile');
+    if(mobBtn) {
+        if((!isSpecial && isSkillActive) || (isSpecial && !isSkillActive)) mobBtn.className = 'toggle-btn active-rare';
+        else if(isSpecial && isSkillActive) mobBtn.className = 'toggle-btn active-epic';
+        else mobBtn.className = 'toggle-btn';
+    }
 
     let valColorClass = 'stat-value';
     if (multiplier === 1.25) valColorClass = 'stat-value val-rare';
@@ -486,42 +544,28 @@ function updatePot() {
         if(!i) return;
         const eff = isGold ? i.golden_effects : i.effects;
         const durs = i.durations || {}; 
-
         Object.keys(eff).forEach(k => {
             const val = eff[k];
             const currentBestVal = bestStats[k] || 0;
-
             if (val > currentBestVal) {
                 bestStats[k] = val;
                 bestDurations[k] = durs[k] || getDefaultDuration(k);
-            } 
-            else if (val === currentBestVal) {
+            } else if (val === currentBestVal) {
                 const currentBestDur = bestDurations[k] || 0;
                 const newDur = durs[k] || getDefaultDuration(k);
-                if (newDur > currentBestDur) {
-                    bestDurations[k] = newDur;
-                }
+                if (newDur > currentBestDur) bestDurations[k] = newDur;
             }
         });
     });
 
-    let h = `<h4 style='margin:0 0 10px 0; color:#fff; border-bottom:1px solid #333'>${t('ui.result_title')}</h4>`;
-    
+    let h = "";
     Object.keys(bestStats).sort().forEach(k => {
         let val = bestStats[k];
         let dur = bestDurations[k];
-
-        if (k !== 'p_hp') { 
-            val = val * multiplier;
-        }
-        
+        if (k !== 'p_hp') val = val * multiplier;
         const timeStr = dur > 0 ? ` <small style='color:#888'>(${formatDuration(dur)})</small>` : "";
-        
         let displayVal = Number.isInteger(val) ? val : parseFloat(val.toFixed(1));
-        
-        if (['food', 'hp', 'armor', 'mining', 'fish', 'skill'].includes(k)) {
-            displayVal = Math.floor(val); 
-        }
+        if (['food', 'hp', 'armor', 'mining', 'fish', 'skill'].includes(k)) displayVal = Math.floor(val); 
 
         h += `<div class="stat-row">
                 <span>${t('stats.' + k)}</span>
@@ -531,24 +575,7 @@ function updatePot() {
                 </div>
               </div>`;
     });
-    res.innerHTML = h;
-}
-
-function setFilter(key, type) {
-    currentFilter = key;
-    filterType = type; 
-    
-    const btnAll = document.getElementById('btn-all');
-    if (btnAll) {
-        if (key === 'all') btnAll.classList.add('active');
-        else btnAll.classList.remove('active');
-    }
-    document.querySelectorAll('.stat-filter-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.innerText === t((type === 'stat' ? 'stats.' : 'locations.') + key));
-    });
-
-    createMobileFilters(); 
-    render();
+    if(res) res.innerHTML = h;
 }
 
 function clearPotOnly() { 

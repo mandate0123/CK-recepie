@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Core Keeper Cooking Simulator</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -51,53 +51,88 @@
     </aside>
 
     <main class="content">
-        <div id="mobileCategoryFilters" class="mobile-category-bar"></div>
+        <div class="mobile-controls">
+            <button id="mobileFilterTrigger" class="filter-trigger-btn" onclick="openFilterModal()">
+                <span id="mobileFilterLabel">All Ingredients</span> ▼
+            </button>
+
+            <div class="sort-btn-group mobile-sort">
+                <button class="sort-btn active" data-sort="default" onclick="setSort('default')">Default</button>
+                <button class="sort-btn" data-sort="value" onclick="setSort('value')">Value</button>
+                <button class="sort-btn" data-sort="location" onclick="setSort('location')">Loc</button>
+            </div>
+        </div>
 
         <div class="content-toolbar">
-            <div class="sort-container">
-                <select id="sortSelect" class="sort-select" onchange="setSort(this.value)">
-                    <option value="default">Sort: Default</option>
-                    <option value="value">Sort: Value (High)</option>
-                    <option value="location">Sort: Location</option>
-                    <option value="category">Sort: Category</option>
-                </select>
+            <div class="sort-btn-group pc-sort">
+                <button class="sort-btn active" data-sort="default" onclick="setSort('default')">Default</button>
+                <button class="sort-btn" data-sort="value" onclick="setSort('value')">Value</button>
+                <button class="sort-btn" data-sort="location" onclick="setSort('location')">Loc</button>
             </div>
         </div>
 
         <div class="ingredient-grid" id="ingredientGrid"></div>
     </main>
 
-    <aside class="result-panel">
-        <div id="skillToggleContainer" class="toggle-container" style="display:none;">
-            <span id="skillToggleLabel">Master Chef OFF</span>
-            <button id="btn_skill_toggle" class="toggle-btn" onclick="toggleSkillMode()">
-                <div class="toggle-circle"></div>
-            </button>
+    <aside class="result-panel" id="resultPanel">
+        <div class="panel-handle-area" onclick="toggleResultPanel()">
+            <div class="handle-bar"></div>
         </div>
 
-        <div id="goldAlert" class="golden-notice"></div>
-        <div id="singleItemNotice" class="single-notice" style="display:none;"></div>
+        <div class="panel-content-scroll">
+            
+            <div class="mobile-result-header">
+                <div class="cooking-pot-mini">
+                    <div class="pot-slot mini" id="slot0_mobile" onclick="removeFromPot(0)">?</div>
+                    <div class="pot-slot mini" id="slot1_mobile" onclick="removeFromPot(1)">?</div>
+                </div>
+                
+                <div id="mobileRarityBadge" class="mobile-rarity-badge" style="display:none;">Common</div>
 
-        <div class="cooking-pot">
-            <div class="slot-wrapper">
-                <div class="pot-slot" id="slot0" onclick="removeFromPot(0)" title="remove">?</div>
-                <div class="slot-name" id="name0"></div>
+                <div class="mobile-header-controls">
+                    <div class="toggle-container mobile-toggle">
+                        <button id="btn_skill_toggle_mobile" class="toggle-btn" onclick="toggleSkillMode()">
+                            <div class="toggle-circle"></div>
+                        </button>
+                    </div>
+                    <button class="reset-btn-mini" onclick="clearPotOnly()" title="Reset">↺</button>
+                </div>
             </div>
-            <div class="slot-wrapper">
-                <div class="pot-slot" id="slot1" onclick="removeFromPot(1)" title="remove">?</div>
-                <div class="slot-name" id="name1"></div>
+
+            <div class="cooking-pot pc-only">
+                <div class="slot-wrapper">
+                    <div class="pot-slot" id="slot0" onclick="removeFromPot(0)" title="remove">?</div>
+                    <div class="slot-name" id="name0"></div>
+                </div>
+                <div class="slot-wrapper">
+                    <div class="pot-slot" id="slot1" onclick="removeFromPot(1)" title="remove">?</div>
+                    <div class="slot-name" id="name1"></div>
+                </div>
             </div>
+
+            <div id="skillToggleContainer" class="toggle-container pc-only">
+                <span id="skillToggleLabel">Master Chef OFF</span>
+                <button id="btn_skill_toggle" class="toggle-btn" onclick="toggleSkillMode()">
+                    <div class="toggle-circle"></div>
+                </button>
+            </div>
+
+            <div id="goldAlert" class="golden-notice pc-only-alert"></div>
+            
+            <div id="singleItemNotice" class="single-notice" style="display:none;"></div>
+            
+            <div class="result-stats" id="resultStats"></div>
+            <div id="foodDisclaimer" class="disclaimer-text"></div>
+            
+            <button class="reset-btn pc-only" id="btn_reset" onclick="clearPotOnly()">Empty Pot</button>
         </div>
-        <div class="result-stats" id="resultStats"></div>
-        <div id="foodDisclaimer" class="disclaimer-text"></div>
-        <button class="reset-btn" id="btn_reset" onclick="clearPotOnly()"></button>
     </aside>
 </div>
 
 <div id="filterModal" class="modal-overlay" onclick="closeModal(event)">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="modalTitle">Category</h3>
+            <h3 id="modalTitle">Select Category</h3>
             <button class="close-modal" onclick="closeModal(null)">✕</button>
         </div>
         <div id="modalBody" class="modal-body"></div>
