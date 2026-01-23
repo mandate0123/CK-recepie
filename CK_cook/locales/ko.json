@@ -4,9 +4,7 @@
     "search_placeholder": "재료 이름 검색...",
     "loc_category": "획득처로 필터링",
     "show_all": "모든 재료 보기",
-    "golden_notice": "✨ 금색 강화 요리 적용 ✨",
     "empty_pot": "재료를 선택하세요.",
-    "result_title": "최종 요리 효과 (최대치 우선)",
     "reset_btn": "냄비 비우기"
   },
   "categories": {
@@ -20,7 +18,6 @@
     "hp": "최대 체력",
     "melee": "물리 근접 피해 (%)",
     "speed": "이동 속도 (%)",
-    "glow": "불빛 범위",
     "p_hp": "영구 최대 체력 (1회)",
     "crit": "치명타 확률 (%)",
     "all_dmg": "모든 피해량 (%)",

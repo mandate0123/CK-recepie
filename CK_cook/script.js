@@ -12,6 +12,12 @@ const locationList = [
     "cattle_drop", "ghorm_boss", "feeding_dodo", "worm_boss", "halloween"
 ];
 
+const dishValues = {
+    "soup": 20, "salad": 5, "pudding": 10, "wrap": 15, "steak": 20,
+    "dip_snack": 5, "fillet": 20, "fish_balls": 20, "sushi": 15, "cake": 20,
+    "cereal": 20, "cheese": 5, "smoothie": 20, "curry": 20, "sandwich": 15
+};
+
 let db = [], translations = {}, currentLang = 'en'; 
 let selectedPot = [null, null];
 let currentFilter = 'all'; 
@@ -63,7 +69,7 @@ async function init() {
                 obj.ui.empty_pot = "Select ingredients.";
             }
             if(lang === 'ja') {
-                obj.ui.single_notice = "食材を1つだけ選択すると、同じ素材を2つ使った結果が表示されます。";
+                obj.ui.single_notice = "食材を1つだけ選択すると、それを2つ使った結果が表示されます。";
                 obj.ui.sort_default = "基本";
                 obj.ui.sort_value = "値順";
                 obj.ui.sort_location = "場所";
@@ -153,9 +159,9 @@ function setLang(lang) {
     }
 
     const disclaimerMap = {
-        'ko': "* 최종 포만감 수치는 소재에 따라 달라질 수 있습니다.",
-        'en': "* Actual food value may vary depending on the recipe.",
-        'ja': "* 最終食べ物値は食材によって変わる場合があります。"
+        'ko': "* 계산 방식의 문제로 0.1 단위의 오차가 있을 수 있습니다.",
+        'en': "* There may be a margin of error of 0.1 due to the calculation method.",
+        'ja': "* 演算の都合上、0.1単位の誤差が生じる場合があります。"
     };
     setTextIfFound('foodDisclaimer', disclaimerMap[lang] || disclaimerMap['ko']);
 
@@ -480,27 +486,17 @@ function updatePot() {
         if(singleNotice) singleNotice.style.display = 'none';
     }
 
-    const isGold = calcItems.some(i => i?.isGolden);
-    const isSpecial = hasSpecialIngredient(calcItems); 
+    // 등급 및 배율 계산
+    const countSpecial = calcItems.filter(i => i && (i.isGolden || i.rarity === 'legendary')).length;
+    const isBothSpecial = (countSpecial === 2);
+    const hasAnySpecial = (countSpecial >= 1);
     
     let multiplier = 1.0;
     let gradeText = "";
     let shortGradeText = "";
     let bgClass = ""; 
 
-    if (!isSpecial) {
-        if (isSkillActive) {
-            multiplier = 1.25; 
-            gradeText = "✨ RARE Dish (x1.25)";
-            shortGradeText = "Rare x1.25";
-            bgClass = "bg-rare";
-        } else {
-            multiplier = 1.0; 
-            gradeText = "Common Dish (x1.0)";
-            shortGradeText = "Common x1.0";
-            bgClass = "bg-common";
-        }
-    } else {
+    if (hasAnySpecial) {
         if (isSkillActive) {
             multiplier = 1.5; 
             gradeText = "✨ EPIC Dish (x1.5)";
@@ -512,6 +508,22 @@ function updatePot() {
             shortGradeText = "Rare x1.25";
             bgClass = "bg-rare";
         }
+    } else {
+        if (isSkillActive) {
+            multiplier = 1.25; 
+            gradeText = "✨ RARE Dish (x1.25)";
+            shortGradeText = "Rare x1.25";
+            bgClass = "bg-rare";
+        } else {
+            multiplier = 1.0; 
+            gradeText = "Common Dish (x1.0)";
+            shortGradeText = "Common x1.0";
+            bgClass = "bg-common";
+        }
+    }
+
+    if (isBothSpecial) {
+        multiplier = multiplier * 1.15;
     }
     
     if(goldAlert) {
@@ -527,45 +539,107 @@ function updatePot() {
     }
 
     const mobBtn = document.getElementById('btn_skill_toggle_mobile');
+    const mobLabel = document.getElementById('skillToggleLabel_mobile');
     if(mobBtn) {
-        if((!isSpecial && isSkillActive) || (isSpecial && !isSkillActive)) mobBtn.className = 'toggle-btn active-rare';
-        else if(isSpecial && isSkillActive) mobBtn.className = 'toggle-btn active-epic';
-        else mobBtn.className = 'toggle-btn';
+        let btnClass = 'toggle-btn';
+        if (isSkillActive) {
+            btnClass += (multiplier >= 1.5) ? ' active-epic' : ' active-rare';
+        }
+        mobBtn.className = btnClass;
+    }
+    if(mobLabel) {
+        mobLabel.innerText = isSkillActive ? "Chef ON" : "Chef OFF";
+    }
+
+    const pcBtn = document.getElementById('btn_skill_toggle');
+    if(pcBtn) {
+        let btnClass = 'toggle-btn';
+        if (isSkillActive) {
+            btnClass += (multiplier >= 1.5) ? ' active-epic' : ' active-rare';
+        }
+        pcBtn.className = btnClass;
     }
 
     let valColorClass = 'stat-value';
-    if (multiplier === 1.25) valColorClass = 'stat-value val-rare';
-    if (multiplier === 1.5) valColorClass = 'stat-value val-epic';
+    if (multiplier >= 1.25 && multiplier < 1.5) valColorClass = 'stat-value val-rare';
+    if (multiplier >= 1.5) valColorClass = 'stat-value val-epic';
 
     let bestStats = {};
     let bestDurations = {};
 
     calcItems.forEach(i => {
         if(!i) return;
-        const eff = isGold ? i.golden_effects : i.effects;
+        const eff = i.effects; 
         const durs = i.durations || {}; 
         Object.keys(eff).forEach(k => {
             const val = eff[k];
-            const currentBestVal = bestStats[k] || 0;
-            if (val > currentBestVal) {
-                bestStats[k] = val;
-                bestDurations[k] = durs[k] || getDefaultDuration(k);
-            } else if (val === currentBestVal) {
-                const currentBestDur = bestDurations[k] || 0;
-                const newDur = durs[k] || getDefaultDuration(k);
-                if (newDur > currentBestDur) bestDurations[k] = newDur;
+            
+            if (k === 'food') return;
+
+            if (k === 'p_hp') {
+                bestStats[k] = Math.max((bestStats[k] || 0), val);
+            } else {
+                const currentBestVal = bestStats[k] || 0;
+                if (val > currentBestVal) {
+                    bestStats[k] = val;
+                    bestDurations[k] = durs[k] || getDefaultDuration(k);
+                } else if (val === currentBestVal) {
+                    const currentBestDur = bestDurations[k] || 0;
+                    const newDur = durs[k] || getDefaultDuration(k);
+                    if (newDur > currentBestDur) bestDurations[k] = newDur;
+                }
             }
         });
     });
+
+    let dominantItem = null;
+    let maxFoodInIng = -1;
+
+    calcItems.forEach(i => {
+        const f = i.effects.food || 0;
+        if (f > maxFoodInIng) {
+            maxFoodInIng = f;
+            dominantItem = i;
+        }
+    });
+
+    let baseFood = 0;
+    if (dominantItem && dominantItem.dish_type) {
+        const hiddenFood = dishValues[dominantItem.dish_type] || 0;
+        const f1 = calcItems[0] ? (calcItems[0].effects.food || 0) : 0;
+        const f2 = calcItems[1] ? (calcItems[1].effects.food || 0) : 0;
+        baseFood = Math.max(f1, f2, hiddenFood);
+    } else {
+        baseFood = maxFoodInIng;
+    }
+    
+    bestStats['food'] = baseFood;
 
     let h = "";
     Object.keys(bestStats).sort().forEach(k => {
         let val = bestStats[k];
         let dur = bestDurations[k];
+        
         if (k !== 'p_hp') val = val * multiplier;
+        
+        if (val <= 0.001) return;
+
         const timeStr = dur > 0 ? ` <small style='color:#888'>(${formatDuration(dur)})</small>` : "";
-        let displayVal = Number.isInteger(val) ? val : parseFloat(val.toFixed(1));
-        if (['food', 'hp', 'armor', 'mining', 'fish', 'skill'].includes(k)) displayVal = Math.floor(val); 
+        
+        let displayVal;
+
+        if (k.endsWith('_im')) {
+             if (val < 1) return; 
+             displayVal = "✔"; 
+        } 
+
+        else if (['armor', 'food', 'glow_b', 'hp', 'mining'].includes(k)) {
+             displayVal = Math.ceil(val - 0.5);
+        } 
+
+        else {
+             displayVal = Math.ceil(val * 10) / 10;
+        }
 
         h += `<div class="stat-row">
                 <span>${t('stats.' + k)}</span>

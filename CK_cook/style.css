@@ -1,6 +1,5 @@
 :root { --bg: #0c0f14; --panel: #1a1d23; --border: #3a3f4b; --accent: #4e9af1; --gold: #f1c40f; --text: #e0e0e0; --danger: #e74c3c; }
 
-/* 스크롤바 */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #0c0f14; }
 ::-webkit-scrollbar-thumb { background: #3a3f4b; border-radius: 3px; }
@@ -33,7 +32,6 @@ header { flex-shrink: 0; min-height: 55px; height: auto; padding: 0.5rem 1rem; b
 .search-box { margin-bottom: 10px; }
 .search-input { width: 92%; padding: 10px; background: #0c0f14; border: 1px solid var(--border); border-radius: 6px; color: white; outline: none; }
 
-/* PC 툴바 */
 .content-toolbar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
 .sort-btn-group { display: flex; gap: 5px; }
 .sort-btn { padding: 6px 12px; background: #252a34; border: 1px solid var(--border); border-radius: 6px; color: #888; font-size: 0.8rem; cursor: pointer; }
@@ -53,8 +51,10 @@ header { flex-shrink: 0; min-height: 55px; height: auto; padding: 0.5rem 1rem; b
 .content { padding: 1rem; background: #121418; overflow-y: auto; }
 .ingredient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
 
-/* PC Item Card (기본) */
-.item-card { background: #252a34; border: 1px solid var(--border); border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; position: relative; transition: 0.2s; }
+.item-card { 
+    background: #252a34; border: 1px solid var(--border); border-radius: 6px; 
+    padding: 10px; text-align: center; cursor: pointer; position: relative; transition: 0.2s; 
+}
 .item-card:hover { border-color: #777; background: #2d3442; }
 .item-card.selected { border: 2px solid var(--accent); background: #2d3442; }
 .item-card.is-golden { border-color: var(--gold); }
@@ -65,7 +65,11 @@ header { flex-shrink: 0; min-height: 55px; height: auto; padding: 0.5rem 1rem; b
 
 .result-panel { background: var(--panel); border-left: 1px solid var(--border); padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; }
 
-.golden-notice { font-size: 0.85rem; padding: 10px; border-radius: 6px; text-align: center; display: none; margin-bottom: 10px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+.golden-notice { 
+    font-size: 0.85rem; padding: 10px; border-radius: 6px; text-align: center; 
+    display: none; margin-bottom: 10px; font-weight: bold; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
 .bg-common { background: #2e7d32; color: white; border: 1px solid #43a047; }
 .bg-rare { background: #1565c0; color: white; border: 1px solid #1e88e5; }
 .bg-epic { background: #6a1b9a; color: white; border: 1px solid #8e24aa; }
@@ -77,11 +81,7 @@ header { flex-shrink: 0; min-height: 55px; height: auto; padding: 0.5rem 1rem; b
 .pot-slot:hover { border-color: var(--danger); background: #222; }
 .slot-name { margin-top: 8px; font-size: 0.8rem; color: #aaa; text-align: center; min-height: 40px; line-height: 1.2; word-break: keep-all; }
 
-/* ★ 빈 냄비 텍스트 정렬 및 스타일 개선 */
-.empty-msg-container {
-    display: flex; justify-content: center; align-items: center; 
-    height: 100px; width: 100%;
-}
+.empty-msg-container { display: flex; justify-content: center; align-items: center; height: 100px; width: 100%; }
 .empty-msg { font-size: 1rem; color: rgba(255,255,255,0.6); font-weight: bold; }
 
 .toggle-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0 5px; flex-shrink: 0; }
@@ -143,28 +143,22 @@ footer { padding: 15px 10px; border-top: 1px solid #2a2e37; text-align: center; 
 
     .content { flex: 1; overflow-y: auto; padding-bottom: 50px; }
     
-    /* ★ 모바일 리스트 스타일 (컴팩트 & 1줄) */
     .ingredient-grid { grid-template-columns: 1fr; gap: 6px; }
     .item-card { 
         display: flex; align-items: center; padding: 0 10px; 
-        height: 42px; /* 높이 축소 */
-        text-align: left; 
+        height: 42px; text-align: left; 
     }
     .item-icon { width: 32px; height: 32px; margin: 0 10px 0 0; }
     
-    /* 스탯 배지 (카드 내부, 왼쪽에 배치) */
     .stat-badge { 
-        position: static; /* 흐름에 따름 */
-        margin-right: 10px;
+        position: static; margin-right: 10px;
         font-size: 0.8rem; padding: 2px 6px;
-        background: #333; border: 1px solid #555; /* 박스 느낌 살리기 */
-        order: -1; /* 맨 앞으로 */
+        background: #333; border: 1px solid #555; order: -1; 
     }
     
     .item-name { font-size: 0.9rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .item-loc { font-size: 0.75rem; color: #888; margin-left: 10px; white-space: nowrap; }
 
-    /* Result Panel */
     .result-panel {
         position: fixed; bottom: 0; left: 0; width: 100%;
         height: auto; max-height: 50vh;
@@ -205,14 +199,14 @@ footer { padding: 15px 10px; border-top: 1px solid #2a2e37; text-align: center; 
     }
 
     .mobile-header-controls { display: flex; align-items: center; gap: 10px; }
-    .mobile-toggle { margin: 0 !important; }
+    .mobile-toggle { margin: 0 !important; gap: 6px; }
+    .toggle-label-mini { font-size: 0.75rem; color: #888; }
     
     .reset-btn-mini {
         background: var(--danger); color: white; border: none; 
         width: 32px; height: 32px;
         border-radius: 6px; font-size: 1.2rem; cursor: pointer; 
-        display: flex; align-items: center; justify-content: center;
-        padding: 0;
+        display: flex; align-items: center; justify-content: center; padding: 0;
     }
 
     .result-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

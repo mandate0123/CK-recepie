@@ -4,9 +4,7 @@
     "search_placeholder": "食材を検索...",
     "loc_category": "入手先で検索",
     "show_all": "全ての食材を表示",
-    "golden_notice": "✨ 金色の作物ボーナス適用 ✨",
     "empty_pot": "食材を選択してください。",
-    "result_title": "調理結果",
     "reset_btn": "鍋を空にする"
   },
   "categories": {
@@ -20,7 +18,6 @@
     "hp": "最大体力",
     "melee": "物理近接ダメージ (%)",
     "speed": "移動スピード (%)",
-    "glow": "光度",
     "p_hp": "最大体力 (永続)",
     "crit": "クリティカルヒット確率 (%)",
     "all_dmg": "ダメージ (%)",

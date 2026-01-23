@@ -4,9 +4,7 @@
     "search_placeholder": "Search ingredients...",
     "loc_category": "Locations",
     "show_all": "Show All Ingredients",
-    "golden_notice": "✨ Golden Crop Bonus Applied ✨",
     "empty_pot": "Select ingredients to cook.",
-    "result_title": "Final Effects",
     "reset_btn": "Clear Pot"
   },
   "categories": {
@@ -20,7 +18,6 @@
     "hp": "Max Health",
     "melee": "Melee Damage (%)",
     "speed": "Movement Speed (%)",
-    "glow": "Glow",
     "p_hp": "Perm. Max Health",
     "crit": "Crit Chance (%)",
     "all_dmg": "All Damage (%)",
