@@ -43,7 +43,7 @@
   { "id": "black_steel_urchin", "category": "fish", "rarity": "rare", "dish_type": "sushi", "img": "assets/fish/Black_Steel_Urchin.webp", "loc_id": "mold_biome", "effects": { "food": 19, "regen": 3.6, "armor": 22, "thorns": 15 } },
   { "id": "bottom_tracer", "category": "fish", "rarity": "common", "dish_type": "fillet", "img": "assets/fish/Bottom_Tracer.webp", "loc_id": "sunken_sea", "effects": { "food": 20, "regen": 5.8, "m_regen": 2.8 } },
   { "id": "silver_dart", "category": "fish", "rarity": "uncommon", "dish_type": "sushi", "img": "assets/fish/Silver_Dart.webp", "loc_id": "sunken_sea", "effects": { "food": 21, "regen": 5.5, "c_dmg": 31 } },
-  { "id": "golden_dart", "category": "fish", "rarity": "uncommon", "isGolden": true, "dish_type": "sushi", "img": "assets/fish/Golden_Dart.webp", "loc_id": "sunken_sea", "effects": { "food": 22, "regen": 5.7, "dodge": 11 } },
+  { "id": "golden_dart", "category": "fish", "rarity": "uncommon", "dish_type": "sushi", "img": "assets/fish/Golden_Dart.webp", "loc_id": "sunken_sea", "effects": { "food": 22, "regen": 5.7, "dodge": 11 } },
   { "id": "pink_coralotl", "category": "fish", "rarity": "rare", "dish_type": "fish_balls", "img": "assets/fish/Pink_Coralotl.webp", "loc_id": "sunken_sea", "effects": { "food": 22, "regen": 4.7, "m_max": 50, "m_barrier": 36 } },
   { "id": "white_coralotl", "category": "fish", "rarity": "rare", "dish_type": "fish_balls", "img": "assets/fish/White_Coralotl.webp", "loc_id": "sunken_sea", "effects": { "food": 19, "regen": 5.8, "mining_s": 14.8 } },
   { "id": "solid_spikeback", "category": "fish", "rarity": "common", "dish_type": "fillet", "img": "assets/fish/Solid_Spikeback.webp", "loc_id": "desert_beginning", "effects": { "food": 21, "armor": 38, "thorns": 50 } },
