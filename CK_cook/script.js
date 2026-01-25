@@ -2,7 +2,7 @@ const filterCategories = {
     "survival": ["hp", "p_hp", "regen", "regen_b", "l_leech", "food", "food_drain", "ally_regen"],
     "defense": ["armor", "dodge", "m_barrier", "b_res", "burn_im", "mold_im", "s_slow_im", "a_dmg_im"],
     "attack": ["all_dmg", "melee", "r_dmg", "magic", "pet_dmg", "crit", "c_dmg", "b_dmg", "thorns", "speed_a", "m_speed", "r_speed", "minion", "minion_s", "minion_c"],
-    "utility": ["speed", "glow", "glow_b", "m_max", "m_regen", "mining", "mining_s", "fish", "knock"]
+    "utility": ["speed", "glow_b", "m_max", "m_regen", "mining", "mining_s", "fish", "knock"]
 };
 
 const locationList = [
@@ -25,7 +25,11 @@ let filterType = 'all';
 let currentSort = 'default'; 
 let isSkillActive = false; 
 
+let favIngredients = JSON.parse(localStorage.getItem('favIngredients')) || [];
+let savedRecipes = JSON.parse(localStorage.getItem('savedRecipes')) || [];
 let categoryState = JSON.parse(localStorage.getItem('categoryState')) || {};
+
+let isMobileDetailView = false; 
 
 function getInitialLang() {
     const savedLang = localStorage.getItem('siteLang');
@@ -59,6 +63,13 @@ async function init() {
                 obj.ui.sort_location = "입수처";
                 obj.ui.sort_category = "품목별";
                 obj.ui.empty_pot = "재료를 선택하세요.";
+                obj.ui.filter_fav = "★ 즐겨찾기";
+                obj.ui.btn_save_recipe = "레시피 저장";
+                obj.ui.recipe_book = "요리책";
+                obj.ui.no_saved_recipe = "저장된 요리가 없습니다.";
+                obj.ui.recipe_saved = "요리가 저장되었습니다!";
+                obj.ui.enter_recipe_name = "이 레시피의 이름을 입력하세요:";
+                obj.ui.default_recipe_name = "나만의 요리";
             }
             if(lang === 'en') {
                 obj.ui.single_notice = "Selecting one ingredient shows the result of cooking two of them.";
@@ -67,6 +78,13 @@ async function init() {
                 obj.ui.sort_location = "Loc";
                 obj.ui.sort_category = "Cat";
                 obj.ui.empty_pot = "Select ingredients.";
+                obj.ui.filter_fav = "★ Favorites";
+                obj.ui.btn_save_recipe = "Save Recipe";
+                obj.ui.recipe_book = "Recipe Book";
+                obj.ui.no_saved_recipe = "No saved recipes.";
+                obj.ui.recipe_saved = "Recipe Saved!";
+                obj.ui.enter_recipe_name = "Enter recipe name:";
+                obj.ui.default_recipe_name = "Custom Recipe";
             }
             if(lang === 'ja') {
                 obj.ui.single_notice = "食材を1つだけ選択すると、それを2つ使った結果が表示されます。";
@@ -75,6 +93,13 @@ async function init() {
                 obj.ui.sort_location = "場所";
                 obj.ui.sort_category = "種類";
                 obj.ui.empty_pot = "食材を選択してください。";
+                obj.ui.filter_fav = "★ お気に入り";
+                obj.ui.btn_save_recipe = "レシピ保存";
+                obj.ui.recipe_book = "レシピ本";
+                obj.ui.no_saved_recipe = "保存されたレシピはありません。";
+                obj.ui.recipe_saved = "レシピを保存しました！";
+                obj.ui.enter_recipe_name = "レシピの名前を入力してください:";
+                obj.ui.default_recipe_name = "マイレシピ";
             }
         };
 
@@ -84,7 +109,14 @@ async function init() {
 
         translations = { ko, en, ja };
         setLang(getInitialLang());
-        window.addEventListener('resize', render);
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && isMobileDetailView) {
+                isMobileDetailView = false;
+                const btn = document.getElementById('btn_mobile_detail');
+                if(btn) btn.classList.remove('active');
+            }
+            render();
+        });
 
         window.onclick = function(event) {
             if (!event.target.matches('.lang-globe-btn')) {
@@ -149,14 +181,10 @@ function setLang(lang) {
     setTextIfFound('sort-value', t('ui.sort_value'));
     setTextIfFound('sort-location', t('ui.sort_location'));
     setTextIfFound('btn_reset', t('ui.reset_btn'));
-
-    const sortSelect = document.getElementById('sortSelect');
-    if(sortSelect && sortSelect.options.length > 3) {
-        sortSelect.options[0].text = t('ui.sort_default');
-        sortSelect.options[1].text = t('ui.sort_value');
-        sortSelect.options[2].text = t('ui.sort_location');
-        sortSelect.options[3].text = t('ui.sort_category');
-    }
+    setTextIfFound('btn_save_recipe', t('ui.btn_save_recipe'));
+    
+    const recipeBookBtn = document.getElementById('btn_recipe_book');
+    if(recipeBookBtn) recipeBookBtn.title = t('ui.recipe_book');
 
     const disclaimerMap = {
         'ko': "* 계산 방식의 문제로 0.1 단위의 오차가 있을 수 있습니다.",
@@ -165,6 +193,7 @@ function setLang(lang) {
     };
     setTextIfFound('foodDisclaimer', disclaimerMap[lang] || disclaimerMap['ko']);
 
+    addFavFilterBtn(); 
     updateMobileFilterLabel();
     createSidebarUI(); 
     render(); updatePot();      
@@ -214,11 +243,30 @@ function createSidebarUI() {
     const container = document.getElementById('dynamicFilters');
     if(!container) return;
     container.innerHTML = '';
+    
+    addFavFilterBtn();
+
     for (const [catKey, stats] of Object.entries(filterCategories)) {
         createCategoryGroup(container, catKey, t('categories.' + catKey), stats, 'stat');
     }
     createCategoryGroup(container, 'locations', t('ui.loc_category'), locationList, 'loc');
 }
+
+function addFavFilterBtn() {
+    const container = document.querySelector('.pc-filters .filter-category');
+    if(!container) return;
+    
+    let btn = document.getElementById('btn-fav');
+    if(!btn) {
+        btn = document.createElement('button');
+        btn.className = 'stat-filter-btn fav-filter-btn';
+        btn.id = 'btn-fav';
+        btn.onclick = () => setFilter('fav', 'special');
+        container.appendChild(btn); 
+    }
+    btn.innerHTML = `<span id="txt-fav">${t('ui.filter_fav')}</span>`;
+}
+
 
 function createCategoryGroup(container, catKey, title, items, type) {
     const div = document.createElement('div');
@@ -252,7 +300,10 @@ function openFilterModal() {
 
     const modal = document.getElementById('filterModal');
     const body = document.getElementById('modalBody');
+    const title = document.getElementById('modalTitle');
     if(!modal || !body) return;
+    
+    title.innerText = t('ui.modal_title') || "Select Category";
     body.innerHTML = ''; 
 
     const gridDiv = document.createElement('div');
@@ -264,6 +315,13 @@ function openFilterModal() {
     allBtn.innerText = t('ui.show_all') || "All Ingredients";
     allBtn.onclick = () => { setFilter('all', 'all'); closeModal(); };
     gridDiv.appendChild(allBtn);
+    
+    const favBtn = document.createElement('button');
+    favBtn.className = `modal-btn fav-filter-btn ${currentFilter === 'fav' ? 'active' : ''}`;
+    favBtn.style.gridColumn = "1 / -1";
+    favBtn.innerText = t('ui.filter_fav');
+    favBtn.onclick = () => { setFilter('fav', 'special'); closeModal(); };
+    gridDiv.appendChild(favBtn);
 
     const appendGroup = (catKey, items, type) => {
         const groupTitle = document.createElement('div');
@@ -304,15 +362,27 @@ function setFilter(key, type) {
     filterType = type; 
     
     const btnAll = document.getElementById('btn-all');
-    if (btnAll) {
-        if (key === 'all') btnAll.classList.add('active');
-        else btnAll.classList.remove('active');
-    }
-    document.querySelectorAll('.stat-filter-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.innerText === t((type === 'stat' ? 'stats.' : 'locations.') + key));
-    });
+    if (btnAll) btnAll.classList.remove('active');
+    
+    document.querySelectorAll('.stat-filter-btn').forEach(btn => btn.classList.remove('active'));
 
-    updateMobileFilterLabel();
+    if (key === 'fav') {
+        const favBtn = document.getElementById('btn-fav');
+        if(favBtn) favBtn.classList.add('active');
+        const mobLabel = document.getElementById('mobileFilterLabel');
+        if(mobLabel) mobLabel.innerText = t('ui.filter_fav');
+    }
+    else if (key === 'all') {
+        if(btnAll) btnAll.classList.add('active');
+        updateMobileFilterLabel();
+    } else {
+        document.querySelectorAll('.stat-filter-btn').forEach(btn => {
+            const labelKey = (type === 'stat' ? 'stats.' : 'locations.') + key;
+            if (btn.innerText === t(labelKey)) btn.classList.add('active');
+        });
+        updateMobileFilterLabel();
+    }
+
     render();
 }
 
@@ -321,10 +391,18 @@ function updateMobileFilterLabel() {
     if (!label) return;
     if (currentFilter === 'all') {
         label.innerText = t('ui.show_all');
+    } else if (currentFilter === 'fav') {
+        label.innerText = t('ui.filter_fav');
     } else {
         const labelKey = filterType === 'stat' ? `stats.${currentFilter}` : `locations.${currentFilter}`;
         label.innerText = t(labelKey);
     }
+}
+
+function toggleMobileDetailView() {
+    isMobileDetailView = !isMobileDetailView;
+    document.getElementById('btn_mobile_detail').classList.toggle('active', isMobileDetailView);
+    render();
 }
 
 function render() {
@@ -344,8 +422,12 @@ function render() {
     
     let filteredItems = db.filter(i => {
         let match = true;
-        if (filterType === 'stat') match = !!i.effects[currentFilter];
+        if (currentFilter === 'fav') {
+            match = favIngredients.includes(i.id);
+        }
+        else if (filterType === 'stat') match = !!i.effects[currentFilter];
         else if (filterType === 'loc') match = (i.loc_id === currentFilter);
+        
         const name = t('items.' + i.id).toLowerCase();
         return match && name.includes(q);
     });
@@ -359,24 +441,54 @@ function render() {
     filteredItems.forEach(i => {
         const card = document.createElement('div');
         const isSelected = selectedPot.includes(i);
-        card.className = `item-card ${isSelected ? 'selected' : ''} ${i.isGolden ? 'is-golden' : ''}`;
+        card.className = `item-card ${isSelected ? 'selected' : ''} ${i.isGolden ? 'is-golden' : ''} ${isMobileDetailView ? 'expanded' : ''}`;
         const rarityClass = i.rarity ? `rarity-${i.rarity}` : 'rarity-common';
         
+        const isFav = favIngredients.includes(i.id);
+        const favClass = isFav ? 'active' : '';
+
         let statBadge = '';
-        if (filterType === 'stat' && currentFilter !== 'all') {
+        if (filterType === 'stat' && currentFilter !== 'all' && currentFilter !== 'fav') {
             const val = i.effects[currentFilter];
             if (val) {
                 statBadge = `<div class="stat-badge">+${val}</div>`;
             }
         }
 
+        let detailStatsHtml = '';
+        if (isMobileDetailView) {
+            detailStatsHtml = `<div class="mobile-stats-container">`;
+            Object.keys(i.effects).forEach(k => {
+                let val = i.effects[k];
+                const isHighlight = (filterType === 'stat' && k === currentFilter);
+                const nameKey = `stats.${k}`;
+                const statName = t(nameKey).includes('stats.') ? k : t(nameKey);
+                const highlightClass = isHighlight ? 'stat-highlight' : '';
+                detailStatsHtml += `<span class="mobile-stat-item ${highlightClass}">${statName}: ${val}</span>`;
+            });
+            detailStatsHtml += `</div>`;
+        }
+
         card.innerHTML = `
+            <div class="fav-star ${favClass}" onclick="toggleFavIng(event, '${i.id}')">★</div>
             ${statBadge}
             <img src="${i.img}" class="item-icon" alt="${i.id}">
             <span class="item-name ${rarityClass}">${t('items.' + i.id)}</span>
             <span class="item-loc">${t('locations.' + i.loc_id)}</span>
+            ${detailStatsHtml}
         `;
-        card.onclick = () => addToPot(i);
+        
+        card.onclick = (e) => {
+            if(e.target.classList.contains('fav-star')) return;
+            addToPot(i);
+        };
+
+        if(window.innerWidth > 768) {
+            card.onmouseenter = () => showTooltip(i);
+            card.onmousemove = (e) => moveTooltip(e);
+            card.onmouseleave = () => hideTooltip();
+        }
+
         grid.appendChild(card);
     });
 }
@@ -486,7 +598,6 @@ function updatePot() {
         if(singleNotice) singleNotice.style.display = 'none';
     }
 
-    // 등급 및 배율 계산
     const countSpecial = calcItems.filter(i => i && (i.isGolden || i.rarity === 'legendary')).length;
     const isBothSpecial = (countSpecial === 2);
     const hasAnySpecial = (countSpecial >= 1);
@@ -656,6 +767,150 @@ function clearPotOnly() {
     selectedPot = [null, null]; 
     updatePot(); 
     render(); 
+}
+
+function toggleFavIng(e, id) {
+    e.stopPropagation(); 
+    const idx = favIngredients.indexOf(id);
+    if (idx > -1) {
+        favIngredients.splice(idx, 1);
+    } else {
+        favIngredients.push(id);
+    }
+    localStorage.setItem('favIngredients', JSON.stringify(favIngredients));
+    render();
+}
+
+function saveCurrentRecipe() {
+    if (!selectedPot[0] && !selectedPot[1]) return;
+    
+    const ids = [
+        selectedPot[0] ? selectedPot[0].id : null, 
+        selectedPot[1] ? selectedPot[1].id : null
+    ].sort();
+
+    const exists = savedRecipes.some(r => {
+        const rIds = [r.id1, r.id2].sort();
+        return rIds[0] === ids[0] && rIds[1] === ids[1];
+    });
+
+    if (exists) {
+        alert(t('ui.recipe_saved')); 
+        return;
+    }
+
+    const defaultName = t('ui.default_recipe_name');
+    const nameInput = prompt(t('ui.enter_recipe_name'), defaultName);
+
+    if (nameInput === null) return;
+
+    const finalName = nameInput.trim() || defaultName;
+
+    savedRecipes.push({ 
+        id1: ids[0], 
+        id2: ids[1],
+        name: finalName 
+    });
+    
+    localStorage.setItem('savedRecipes', JSON.stringify(savedRecipes));
+    openRecipeBook();
+}
+
+function openRecipeBook() {
+    const modal = document.getElementById('filterModal'); 
+    const body = document.getElementById('modalBody');
+    const title = document.getElementById('modalTitle');
+    
+    title.innerText = t('ui.recipe_book');
+    body.innerHTML = '';
+
+    if (savedRecipes.length === 0) {
+        body.innerHTML = `<div style="text-align:center; padding:20px; color:#888;">${t('ui.no_saved_recipe')}</div>`;
+    } else {
+        const list = document.createElement('div');
+        list.className = 'recipe-list';
+        
+        savedRecipes.forEach((recipe, idx) => {
+            const item1 = db.find(i => i.id === recipe.id1);
+            const item2 = db.find(i => i.id === recipe.id2);
+            
+            const recipeName = recipe.name || t('ui.default_recipe_name');
+
+            const row = document.createElement('div');
+            row.className = 'recipe-row';
+            row.innerHTML = `
+                <div class="recipe-info" onclick="loadRecipe(${idx})">
+                    <div class="recipe-name">${recipeName}</div>
+                    <div class="recipe-imgs">
+                        ${item1 ? `<img src="${item1.img}">` : '<div class="empty-slot">?</div>'}
+                        <span>+</span>
+                        ${item2 ? `<img src="${item2.img}">` : '<div class="empty-slot">?</div>'}
+                    </div>
+                </div>
+                <button class="recipe-del-btn" onclick="removeRecipe(${idx})">🗑️</button>
+            `;
+            list.appendChild(row);
+        });
+        body.appendChild(list);
+    }
+    
+    modal.style.display = 'flex';
+}
+
+function loadRecipe(idx) {
+    const recipe = savedRecipes[idx];
+    selectedPot = [
+        recipe.id1 ? db.find(i => i.id === recipe.id1) : null,
+        recipe.id2 ? db.find(i => i.id === recipe.id2) : null
+    ];
+    updatePot();
+    render();
+    closeModal();
+    if (window.innerWidth <= 768) openResultPanel();
+}
+
+function removeRecipe(idx) {
+    savedRecipes.splice(idx, 1);
+    localStorage.setItem('savedRecipes', JSON.stringify(savedRecipes));
+    openRecipeBook(); 
+}
+
+const tooltipEl = document.getElementById('hoverTooltip');
+
+function showTooltip(item) {
+    if(!tooltipEl) return;
+    
+    let statsHtml = '';
+    Object.keys(item.effects).forEach(k => {
+        let val = item.effects[k];
+        let displayVal = val;
+        if (['food', 'hp', 'mining', 'armor'].includes(k)) displayVal = Math.floor(val);
+        
+        const nameKey = `stats.${k}`;
+        const statName = t(nameKey).includes('stats.') ? k : t(nameKey);
+
+        statsHtml += `
+            <div class="tooltip-row">
+                <span>${statName}</span>
+                <span class="tooltip-val">+${displayVal}</span>
+            </div>`;
+    });
+
+    tooltipEl.innerHTML = `
+        <div class="tooltip-title">${t('items.' + item.id)}</div>
+        ${statsHtml}
+    `;
+    tooltipEl.style.display = 'block';
+}
+
+function moveTooltip(e) {
+    if(!tooltipEl) return;
+    tooltipEl.style.left = (e.clientX + 15) + 'px';
+    tooltipEl.style.top = (e.clientY + 15) + 'px';
+}
+
+function hideTooltip() {
+    if(tooltipEl) tooltipEl.style.display = 'none';
 }
 
 init();

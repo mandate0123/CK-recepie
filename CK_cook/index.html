@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Core Keeper Cooking Simulator</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="assets/favicons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicons/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicons/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/favicons/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/favicons/android-chrome-512x512.png">
+    <meta name="theme-color" content="#ffffff">
 </head>
 <body>
 
@@ -12,6 +19,7 @@
     <div class="header-left">
         <button class="search-toggle-btn" onclick="toggleMobileSearch()">🔍</button>
         <h3 id="appTitle">Core Keeper Cook</h3>
+        <button id="btn_recipe_book" class="recipe-book-btn" onclick="openRecipeBook()" title="Recipe Book">📖</button>
     </div>
 
     <div class="lang-wrapper">
@@ -40,7 +48,7 @@
                 <button class="stat-filter-btn active" id="btn-all" onclick="setFilter('all', 'all')">
                     <span id="txt-show-all">All Ingredients</span>
                 </button>
-            </div>
+                </div>
             <div id="dynamicFilters"></div>
         </div>
 
@@ -52,9 +60,12 @@
 
     <main class="content">
         <div class="mobile-controls">
-            <button id="mobileFilterTrigger" class="filter-trigger-btn" onclick="openFilterModal()">
-                <span id="mobileFilterLabel">All Ingredients</span> ▼
-            </button>
+            <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                <button id="mobileFilterTrigger" class="filter-trigger-btn" onclick="openFilterModal()">
+                    <span id="mobileFilterLabel">All Ingredients</span> ▼
+                </button>
+                <button id="btn_mobile_detail" class="detail-toggle-btn" onclick="toggleMobileDetailView()">❓</button>
+            </div>
 
             <div class="sort-btn-group mobile-sort">
                 <button class="sort-btn active" data-sort="default" onclick="setSort('default')">Default</button>
@@ -90,6 +101,8 @@
                 <div id="mobileRarityBadge" class="mobile-rarity-badge" style="display:none;">Common</div>
 
                 <div class="mobile-header-controls">
+                    <button class="save-btn-mini" onclick="saveCurrentRecipe()">💾</button>
+
                     <div class="toggle-container mobile-toggle">
                         <span id="skillToggleLabel_mobile" class="toggle-label-mini">Chef OFF</span>
                         <button id="btn_skill_toggle_mobile" class="toggle-btn" onclick="toggleSkillMode()">
@@ -125,7 +138,10 @@
             <div class="result-stats" id="resultStats"></div>
             <div id="foodDisclaimer" class="disclaimer-text"></div>
             
-            <button class="reset-btn pc-only" id="btn_reset" onclick="clearPotOnly()">Empty Pot</button>
+            <div class="pc-only" style="display:flex; gap:5px; margin-top:10px;">
+                <button class="save-btn" id="btn_save_recipe" onclick="saveCurrentRecipe()">Save Recipe</button>
+                <button class="reset-btn" id="btn_reset" onclick="clearPotOnly()">Empty Pot</button>
+            </div>
         </div>
     </aside>
 </div>
@@ -139,6 +155,8 @@
         <div id="modalBody" class="modal-body"></div>
     </div>
 </div>
+
+<div id="hoverTooltip" class="hover-tooltip"></div>
 
 <script src="script.js"></script>
 </body>
