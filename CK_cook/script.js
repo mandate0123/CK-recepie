@@ -2,12 +2,13 @@ const filterCategories = {
     "survival": ["hp", "p_hp", "regen", "regen_b", "l_leech", "food", "food_drain", "ally_regen"],
     "defense": ["armor", "dodge", "m_barrier", "b_res", "burn_im", "mold_im", "s_slow_im", "a_dmg_im"],
     "attack": ["all_dmg", "melee", "r_dmg", "magic", "pet_dmg", "crit", "c_dmg", "b_dmg", "thorns", "speed_a", "m_speed", "r_speed", "minion", "minion_s", "minion_c"],
-    "utility": ["speed", "glow_b", "m_max", "m_regen", "mining", "mining_s", "fish", "knock"]
+    "utility": ["speed", "glow", "glow_b", "glow_p", "m_max", "m_regen", "mining", "mining_s", "fish", "knock"]
 };
 
 const locationList = [
     "dirt_biome", "clay_caves", "forgotten_ruins", "azeos_wilderness", 
-    "mold_biome", "sunken_sea", "desert_beginning", "shimmering_frontier", "lava", "grimy_water",
+    "mold_biome", "sunken_sea", "desert_beginning", "shimmering_frontier", 
+    "breakers_reach", "lava", "grimy_water",
     "expert_gardener", "acid_water", "larva_drop", "merchant_rare", 
     "cattle_drop", "ghorm_boss", "feeding_dodo", "worm_boss", "halloween"
 ];
@@ -426,7 +427,11 @@ function render() {
             match = favIngredients.includes(i.id);
         }
         else if (filterType === 'stat') match = !!i.effects[currentFilter];
-        else if (filterType === 'loc') match = (i.loc_id === currentFilter);
+        else if (filterType === 'loc') {
+            // [방법 2 적용] loc_id가 배열이 아니면 강제로 배열로 만들어 검사
+            const locArray = Array.isArray(i.loc_id) ? i.loc_id : [i.loc_id];
+            match = locArray.includes(currentFilter);
+        }
         
         const name = t('items.' + i.id).toLowerCase();
         return match && name.includes(q);
@@ -435,7 +440,12 @@ function render() {
     if (currentSort === 'value' && filterType === 'stat') {
         filteredItems.sort((a, b) => (b.effects[currentFilter] || 0) - (a.effects[currentFilter] || 0));
     } else if (currentSort === 'location') {
-        filteredItems.sort((a, b) => locationList.indexOf(a.loc_id) - locationList.indexOf(b.loc_id));
+        // [방법 2 적용] 정렬 시에도 문자열/배열 여부를 체크하여 첫 번째 지역을 기준으로 비교
+        filteredItems.sort((a, b) => {
+            const locA = Array.isArray(a.loc_id) ? a.loc_id[0] : a.loc_id;
+            const locB = Array.isArray(b.loc_id) ? b.loc_id[0] : b.loc_id;
+            return locationList.indexOf(locA) - locationList.indexOf(locB);
+        });
     }
 
     filteredItems.forEach(i => {
@@ -469,12 +479,16 @@ function render() {
             detailStatsHtml += `</div>`;
         }
 
+        // [방법 2 적용] 텍스트 출력 시 배열로 변환 후, 맵핑하여 쉼표로 연결
+        const locArray = Array.isArray(i.loc_id) ? i.loc_id : [i.loc_id];
+        const locText = locArray.map(loc => t('locations.' + loc)).join(', ');
+
         card.innerHTML = `
             <div class="fav-star ${favClass}" onclick="toggleFavIng(event, '${i.id}')">★</div>
             ${statBadge}
             <img src="${i.img}" class="item-icon" alt="${i.id}">
             <span class="item-name ${rarityClass}">${t('items.' + i.id)}</span>
-            <span class="item-loc">${t('locations.' + i.loc_id)}</span>
+            <span class="item-loc">${locText}</span>
             ${detailStatsHtml}
         `;
         

@@ -32,7 +32,8 @@
     "r_dmg": "물리 원거리 피해 (%)",
     "r_speed": "원거리 공격 속도 (%)",
     "magic": "마법 피해 (%)",
-    "glow_b": "파랑 불빛 범위",
+    "glow_b": "파랑 불빛",
+    "glow": "불빛",
     "minion": "소환수 피해 (%)",
     "minion_s": "소환수 공격 속도 (%)",
     "mining": "채굴 피해",
@@ -53,7 +54,9 @@
     "knock": "밀쳐내기 확률 (%)",
     "burn_im": "화상 면역",
     "food": "포만감", 
-    "hp_5min": "최대체력"
+    "hp_5min": "최대체력",
+    "exp_dmg": "폭발물 피해 (%)",
+    "glow_p": "보라 불빛"
   },
   "locations": {
     "dirt_biome": "흙 바이옴",
@@ -75,7 +78,8 @@
     "cattle_drop": "동물 드롭",
     "ghorm_boss": "보스 [포식자 고름]",
     "feeding_dodo": "도도 먹이 주기",
-    "worm_boss": "보스 [초거대 벌레]"
+    "worm_boss": "보스 [초거대 벌레]",
+    "breakers_reach":"파괴의 끝자락"
   },
   "items": {
     "mushroom": "버섯",
@@ -151,7 +155,8 @@
     "giant_mushroom": "거대 버섯",
     "amber_larva": "호박 애벌레",
     "dodo_egg": "도도 알",
-    "colossal_worm_heart": "초거대 벌레 심장"
+    "colossal_worm_heart": "초거대 벌레 심장",
+    "glowing_mushroom": "빛나는 버섯"
   },
   "time": {
     "sec": "초",

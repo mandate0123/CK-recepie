@@ -33,6 +33,7 @@
     "r_speed": "遠距離攻撃スピード (%)",
     "magic": "魔法ダメージ (%)",
     "glow_b": "青色の光度",
+    "glow":"光度",
     "minion": "ミニオンダメージ (%)",
     "minion_s": "ミニオン攻撃スピード (%)",
     "mining": "採掘ダメージ",
@@ -53,7 +54,9 @@
     "knock": "ノックバック率 (%)",
     "burn_im": "燃焼に耐性",
     "food": "食べ物値",
-    "hp_5min": "最大体力"
+    "hp_5min": "最大体力",
+    "exp_dmg": "爆発ダメージ (%)",
+    "glow_p": "紫色の光度"
   },
   "locations": {
     "dirt_biome": "地下世界",
@@ -75,7 +78,8 @@
     "cattle_drop": "各畜産動物、他",
     "ghorm_boss": "アトラスワーム (ボス)",
     "feeding_dodo": "ドードー生産物",
-    "worm_boss": "アトラスワーム"
+    "worm_boss": "アトラスワーム",
+    "breakers_reach":"突破者の到達点"
   },
   "items": {
     "mushroom": "キノコ",
@@ -151,7 +155,8 @@
     "giant_mushroom": "ジャンボキノコ",
     "amber_larva": "琥珀の幼虫",
     "dodo_egg": "ドードーのタマゴ",
-    "colossal_worm_heart": "アトラスワームの心臓"
+    "colossal_worm_heart": "アトラスワームの心臓",
+    "glowing_mushroom": "光るキノコ"
   },
   "time": {
     "sec": "秒",

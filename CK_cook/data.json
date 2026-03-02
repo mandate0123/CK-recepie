@@ -16,8 +16,8 @@
   { "id": "golden_pewpaya", "category": "crop", "rarity": "rare", "isGolden": true, "dish_type": "smoothie", "img": "assets/crop/Golden_Pewpaya.webp", "loc_id": "expert_gardener", "effects": { "food": 21, "regen": 8.2, "r_dmg": 28.2, "r_speed": 8.4 } },
   { "id": "pinegrapple", "category": "crop", "rarity": "uncommon", "dish_type": "smoothie", "img": "assets/crop/Pinegrapple.webp", "loc_id": "sunken_sea", "effects": { "food": 20, "regen": 5.4, "melee": 22.4 } },
   { "id": "golden_pinegrapple", "category": "crop", "rarity": "rare", "isGolden": true, "dish_type": "smoothie", "img": "assets/crop/Golden_Pinegrapple.webp", "loc_id": "expert_gardener", "effects": { "food": 21, "regen": 9.0, "melee": 28.2, "m_speed": 8.4 } },
-  { "id": "sunrice", "category": "crop", "rarity": "uncommon", "dish_type": "curry", "img": "assets/crop/Sunrice.webp", "loc_id": "shimmering_frontier", "effects": { "food": 13, "glow_b": 4, "magic": 30.0 } },
-  { "id": "golden_sunrice", "category": "crop", "rarity": "rare", "isGolden": true, "dish_type": "curry", "img": "assets/crop/Golden_Sunrice.webp", "loc_id": "expert_gardener", "effects": { "food": 13, "glow_b": 4, "magic": 43.3, "m_barrier": 49 } },
+  { "id": "sunrice", "category": "crop", "rarity": "uncommon", "dish_type": "curry", "img": "assets/crop/Sunrice.webp", "loc_id": "shimmering_frontier", "effects": { "food": 13, "glow": 4, "magic": 30.0 } },
+  { "id": "golden_sunrice", "category": "crop", "rarity": "rare", "isGolden": true, "dish_type": "curry", "img": "assets/crop/Golden_Sunrice.webp", "loc_id": "expert_gardener", "effects": { "food": 13, "glow": 4, "magic": 43.3, "m_barrier": 49 } },
   { "id": "lunacorn", "category": "crop", "rarity": "uncommon", "dish_type": "sandwich", "img": "assets/crop/Lunacorn.webp", "loc_id": "shimmering_frontier", "effects": { "food": 13, "glow_b": 4, "minion": 30.0 } },
   { "id": "golden_lunacorn", "category": "crop", "rarity": "rare", "isGolden": true, "dish_type": "sandwich", "img": "assets/crop/Golden_Lunacorn.webp", "loc_id": "expert_gardener", "effects": { "food": 14, "glow_b": 4, "minion": 39.5, "minion_s": 55.2 } },
   { "id": "grumpkin", "category": "crop", "rarity": "uncommon", "dish_type": "soup", "img": "assets/crop/Grumpkin.webp", "loc_id": "halloween", "effects": { "food": 21, "regen": 4.3, "mining": 45 } },
@@ -26,8 +26,8 @@
   { "id": "blue_cave_guppy", "category": "fish", "rarity": "common", "dish_type": "fillet", "img": "assets/fish/Blue_Cave_Guppy.webp", "loc_id": "dirt_biome", "effects": { "food": 21, "regen": 2.2, "m_barrier": 13 } },
   { "id": "rock_jaw", "category": "fish", "rarity": "uncommon", "dish_type": "fish_balls", "img": "assets/fish/Rock_Jaw.webp", "loc_id": "dirt_biome", "effects": { "food": 22, "regen": 2.5, "melee": 15.9 } },
   { "id": "gem_crab", "category": "fish", "rarity": "rare", "dish_type": "sushi", "img": "assets/fish/Gem_Crab.webp", "loc_id": "dirt_biome", "effects": { "food": 21, "regen": 3.1, "armor": 14 } },
-  { "id": "green_blister_head", "category": "fish", "rarity": "common", "dish_type": "fillet", "img": "assets/fish/Green_Blister_Head.webp", "loc_id": "acid_water", "effects": { "food": 20, "regen": 2.5, "a_dmg_im": 1 } },
-  { "id": "yellow_blister_head", "category": "fish", "rarity": "common", "dish_type": "fillet", "img": "assets/fish/Yellow_Blister_Head.webp", "loc_id": "acid_water", "effects": { "food": 21, "regen": 2.6, "s_slow_im": 1 } },
+  { "id": "green_blister_head", "category": "fish", "rarity": "common", "dish_type": "fillet", "img": "assets/fish/Green_Blister_Head.webp", "loc_id":["acid_water", "clay_caves"], "effects": { "food": 20, "regen": 2.5, "a_dmg_im": 1 } },
+  { "id": "yellow_blister_head", "category": "fish", "rarity": "common", "dish_type": "fillet", "img": "assets/fish/Yellow_Blister_Head.webp", "loc_id":["acid_water", "clay_caves"], "effects": { "food": 21, "regen": 2.6, "s_slow_im": 1 } },
   { "id": "devil_worm", "category": "fish", "rarity": "uncommon", "dish_type": "fish_balls", "img": "assets/fish/Devil_Worm.webp", "loc_id": "clay_caves", "effects": { "food": 20, "regen": 3.0, "r_dmg": 22.8 } },
   { "id": "vampire_eel", "category": "fish", "rarity": "rare", "dish_type": "sushi", "img": "assets/fish/Vampire_Eel.webp", "loc_id": "clay_caves", "effects": { "food": 21, "regen": 3.5, "l_leech": 3 } },
   { "id": "dagger_fin", "category": "fish", "rarity": "common", "dish_type": "fillet", "img": "assets/fish/Dagger_Fin.webp", "loc_id": "forgotten_ruins", "effects": { "food": 21, "regen": 3.9, "minion": 23.3 } },
@@ -71,6 +71,7 @@
   { "id": "marbled_meat", "category": "etc", "rarity": "common", "dish_type": "steak", "img": "assets/others/Marbled_Meat.webp", "loc_id": "cattle_drop", "effects": { "food": 27, "regen": 2.6, "all_dmg": 13.3 } },
   { "id": "giant_mushroom", "category": "etc", "rarity": "rare", "dish_type": "salad", "img": "assets/crop/Giant_Mushroom.webp", "loc_id": "clay_caves", "effects": { "food": 31, "p_hp": 25, "hp": 24 } },
   { "id": "amber_larva", "category": "etc", "rarity": "epic", "dish_type": "pudding", "img": "assets/others/Amber_Larva.webp", "loc_id": "ghorm_boss", "effects": { "food": 21, "p_hp": 50, "hp_5min": 52 }, "durations": { "hp_5min": 300 } },
-  { "id": "dodo_egg", "category": "etc", "rarity": "uncommon", "dish_type": "cake", "img": "assets/others/Dodo_Egg.webp", "loc_id": "feeding_dodo", "effects": { "food": 18, "regen": 4.3, "regen_b": 25 } },
-  { "id": "colossal_worm_heart", "category": "etc", "rarity": "epic", "dish_type": "steak", "img": "assets/others/Atlantean_Worm_Heart.webp", "loc_id": "worm_boss", "effects": { "ally_regen": 20, "p_hp": 100 } }
+  { "id": "dodo_egg", "category": "etc", "rarity": "uncommon", "dish_type": "cake", "img": "assets/others/Dodo_Egg.webp", "loc_id": "feeding_dodo", "effects": { "food": 30, "regen": 4.3, "regen_b": 25 } },
+  { "id": "colossal_worm_heart", "category": "etc", "rarity": "epic", "dish_type": "steak", "img": "assets/others/Atlantean_Worm_Heart.webp", "loc_id": "worm_boss", "effects": { "ally_regen": 20, "p_hp": 100 } },
+  { "id": "glowing_mushroom", "category": "etc", "rarity": "common", "dish_type": "soup", "img": "assets/crop/glowing_mushroom.png", "loc_id": "breakers_reach", "effects": { "food": 20, "exp_dmg": 34, "glow_p": 4 } }
 ]

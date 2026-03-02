@@ -33,6 +33,7 @@
     "r_speed": "Range Attack Speed (%)",
     "magic": "Magic Damage (%)",
     "glow_b": "Blue Glow",
+    "glow" : "Glow",
     "minion": "Minion Damage (%)",
     "minion_s": "Minion Attack Speed (%)",
     "mining": "Mining Damage",
@@ -53,7 +54,9 @@
     "knock": "Knockback Chance (%)",
     "burn_im": "Burning Immune",
     "food": "Food", 
-    "hp_5min": "Max health"
+    "hp_5min": "Max health",
+    "exp_dmg": "Explosives damage (%)",
+    "glow_p": "Purple glow"
   },
   "locations": {
     "dirt_biome": "Dirt Biome",
@@ -75,7 +78,8 @@
     "cattle_drop": "Cattle Drop",
     "ghorm_boss": "Ghorm the Devourer",
     "feeding_dodo": "Feeding Dodo",
-    "worm_boss": "Atlantean Worm"
+    "worm_boss": "Atlantean Worm",
+    "breakers_reach":"Breakers Reach"
   },
   "items": {
     "mushroom": "Mushroom",
@@ -151,7 +155,8 @@
     "giant_mushroom": "Giant Mushroom",
     "amber_larva": "Amber Larva",
     "dodo_egg": "Dodo Egg",
-    "colossal_worm_heart": "Colossal Worm Heart"
+    "colossal_worm_heart": "Colossal Worm Heart",
+    "glowing_mushroom": "Glowing_mushroom"
   },
   "time": {
     "sec": "sec",
