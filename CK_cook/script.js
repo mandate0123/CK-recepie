@@ -1,7 +1,7 @@
 const filterCategories = {
     "survival": ["hp", "p_hp", "regen", "regen_b", "l_leech", "food", "food_drain", "ally_regen"],
     "defense": ["armor", "dodge", "m_barrier", "b_res", "burn_im", "mold_im", "s_slow_im", "a_dmg_im"],
-    "attack": ["all_dmg", "melee", "r_dmg", "magic", "pet_dmg", "crit", "c_dmg", "b_dmg", "thorns", "speed_a", "m_speed", "r_speed", "minion", "minion_s", "minion_c"],
+    "attack": ["all_dmg", "melee", "r_dmg", "magic", "pet_dmg","exp_dmg", "crit", "c_dmg", "b_dmg", "thorns", "speed_a", "m_speed", "r_speed", "minion", "minion_s", "minion_c"],
     "utility": ["speed", "glow", "glow_b", "glow_p", "m_max", "m_regen", "mining", "mining_s", "fish", "knock"]
 };
 
@@ -926,5 +926,6 @@ function moveTooltip(e) {
 function hideTooltip() {
     if(tooltipEl) tooltipEl.style.display = 'none';
 }
+
 
 init();
