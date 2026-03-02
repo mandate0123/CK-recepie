@@ -156,10 +156,11 @@
     "amber_larva": "琥珀の幼虫",
     "dodo_egg": "ドードーのタマゴ",
     "colossal_worm_heart": "アトラスワームの心臓",
-    "glowing_mushroom": "光るキノコ"
+    "glowing_mushroom": "ヒカリキノコ"
   },
   "time": {
     "sec": "秒",
     "min": "分"
   }
+
 }
